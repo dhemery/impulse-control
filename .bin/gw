@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Find this directory, no matter where we were called from.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname $DIR)"
+
+cd "$PROJECT_ROOT"
+echo "In $PROJECT_ROOT"
+echo "./gradlew $@"
+./gradlew "$@"
+cd - > /dev/null

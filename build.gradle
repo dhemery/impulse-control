@@ -1,0 +1,46 @@
+import org.gradle.api.JavaVersion
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+ext {
+    vendor = [name: 'Dale H. Emery', group: 'com.dhemery']
+}
+
+project.description = 'Impulse Control'
+project.group = vendor.group
+project.version = "1.0.0"
+
+tasks.install.dependsOn clean
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+tasks.jar {
+    manifest {
+        attributes(
+                "Implementation-Title": project.description,
+                "Implementation-Version": project.version,
+                "Implementation-Vendor": vendor.name
+        )
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://maven.bitwig.com"
+    }
+}
+
+dependencies {
+    compile "com.bitwig:extension-api:3+"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = "3.5"
+}
+
+
+// System.getProperty("user.home")
