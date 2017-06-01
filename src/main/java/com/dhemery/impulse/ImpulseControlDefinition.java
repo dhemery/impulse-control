@@ -1,12 +1,20 @@
 package com.dhemery.impulse;
 
 import com.bitwig.extension.api.PlatformType;
+import com.bitwig.extension.controller.AutoDetectionMidiPortNames;
 import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.dhemery.impulse.ImpulseControl.INPUT_PORT_NAMES;
+import static com.dhemery.impulse.ImpulseControl.OUTPUT_PORT_NAMES;
 
 public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     private static final String AUTHOR = "Dale H. Emery";
@@ -16,8 +24,6 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     private static final String NAME = "Impulse Control";
     private static final int REQUIRED_BITWIG_API_VERSION = 3;
     private static final String VERSION = "0.0.1";
-    private static final String[] INPUT_PORT_NAMES = {"Impulse USB In", "Impulse DIN In"};
-    private static final String[] OUTPUT_PORT_NAMES = {"Impulse USB Out"};3
 
     @Override
     public String getHardwareVendor() {
