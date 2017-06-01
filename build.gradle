@@ -42,5 +42,15 @@ task wrapper(type: Wrapper) {
     gradleVersion = "3.5"
 }
 
+def bitwigExtensionsDirectory = System.getProperty("user.home") + '/Documents/Bitwig Studio/Extensions'
 
-// System.getProperty("user.home")
+task bitwig(type: Copy, dependsOn: jar) {
+    from jar.archivePath
+    into bitwigExtensionsDirectory
+    rename { String fileName ->
+        fileName.replace('.jar', '.bwextension')
+    }
+}
+
+
+defaultTasks 'clean', 'bitwig'
