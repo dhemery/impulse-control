@@ -1,20 +1,12 @@
-package com.dhemery.impulse;
+package com.dhemery.impulse.extension;
 
 import com.bitwig.extension.api.PlatformType;
-import com.bitwig.extension.controller.AutoDetectionMidiPortNames;
 import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.dhemery.impulse.ImpulseControl.INPUT_PORT_NAMES;
-import static com.dhemery.impulse.ImpulseControl.OUTPUT_PORT_NAMES;
 
 public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     private static final String AUTHOR = "Dale H. Emery";
@@ -37,17 +29,17 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
 
     @Override
     public int getNumMidiInPorts() {
-        return INPUT_PORT_NAMES.length;
+        return ImpulseControl.INPUT_PORT_NAMES.length;
     }
 
     @Override
     public int getNumMidiOutPorts() {
-        return OUTPUT_PORT_NAMES.length;
+        return ImpulseControl.OUTPUT_PORT_NAMES.length;
     }
 
     @Override
     public void listAutoDetectionMidiPortNames(AutoDetectionMidiPortNamesList list, PlatformType platformType) {
-        list.add(INPUT_PORT_NAMES, OUTPUT_PORT_NAMES);
+        list.add(ImpulseControl.INPUT_PORT_NAMES, ImpulseControl.OUTPUT_PORT_NAMES);
     }
 
     @Override

@@ -34,6 +34,7 @@
 ### Mod Wheel
 - 0xB2 01 0..7f
 - Why channel 2?
+    - Guess: To avoid collisions with Plugin/Mixer encoder 2 and Mixer fader 2
 
 
 
