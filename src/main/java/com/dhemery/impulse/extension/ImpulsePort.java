@@ -3,8 +3,8 @@ package com.dhemery.impulse.extension;
 import java.util.stream.Stream;
 
 public enum ImpulsePort {
-    USB("Impulse", "Impulse USB In"),
-    DIN("Impulse MIDI In", "Impulse DIN In");
+    USB("Impulse", "Impulse USB"),
+    DIN("Impulse MIDI In", "Impulse DIN");
 
     private final String shortName;
     private final String noteInputName;

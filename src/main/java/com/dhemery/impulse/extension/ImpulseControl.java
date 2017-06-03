@@ -55,7 +55,7 @@ public class ImpulseControl extends ControllerExtension {
 
     private void createNoteInputFor(ImpulsePort port) {
         String[] masks = Studio.noteInputMasks(NOTE_ON, ShortMessage.NOTE_OFF);
-        getMidiInPort(port.ordinal()).createNoteInput(port.shortName(), masks);
+        getMidiInPort(port.ordinal()).createNoteInput(port.noteInputName(), masks);
     }
 
     private String name() {
