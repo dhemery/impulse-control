@@ -2,20 +2,16 @@ package com.dhemery.impulse.extension;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
-import com.dhemery.bitwig.TranslateMidiMessageToBitwigCommand;
 import com.dhemery.bitwig.Studio;
+import com.dhemery.bitwig.TranslateMidiMessageToBitwigCommand;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
 
+import static com.dhemery.impulse.extension.ImpulsePort.USB;
+import static javax.sound.midi.ShortMessage.NOTE_ON;
+
 public class ImpulseControl extends ControllerExtension {
-
-    // TODO: These names do not satisfy Studio extension auto-detect,
-    // but are just fine for the note input names.
-    static final String[] INPUT_PORT_NAMES = {"USB In", "MIDI In"};
-    static final String[] OUTPUT_PORT_NAMES = {"USB Out"};
-
-    private static final int USB_INPUT_PORT_NUMBER = 0;
     private TranslateMidiMessageToBitwigCommand midiToCommand;
 
     ImpulseControl(ImpulseControlDefinition definition, ControllerHost host) {
@@ -27,9 +23,8 @@ public class ImpulseControl extends ControllerExtension {
         ControllerHost host = getHost();
         midiToCommand = new TranslateMidiMessageToBitwigCommand();
 
-
-        createNoteInputFor(USB_INPUT_PORT_NUMBER);
-        getMidiInPort(USB_INPUT_PORT_NUMBER).setMidiCallback(this::executeMidiShortMessage);
+        createNoteInputFor(USB);
+        getMidiInPort(USB.ordinal()).setMidiCallback(this::executeMidiShortMessage);
 
         host.showPopupNotification(String.format("%s initialized", name()));
     }
@@ -58,9 +53,9 @@ public class ImpulseControl extends ControllerExtension {
         getHost().showPopupNotification(String.format("%s exited", name()));
     }
 
-    private void createNoteInputFor(int portNumber) {
-        String[] masks = Studio.noteInputMasks(ShortMessage.NOTE_ON, ShortMessage.NOTE_OFF);
-        getMidiInPort(portNumber).createNoteInput(INPUT_PORT_NAMES[portNumber], masks);
+    private void createNoteInputFor(ImpulsePort port) {
+        String[] masks = Studio.noteInputMasks(NOTE_ON, ShortMessage.NOTE_OFF);
+        getMidiInPort(port.ordinal()).createNoteInput(port.shortName(), masks);
     }
 
     private String name() {

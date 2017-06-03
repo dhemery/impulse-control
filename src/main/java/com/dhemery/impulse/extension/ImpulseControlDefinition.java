@@ -6,6 +6,7 @@ import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class ImpulseControlDefinition extends ControllerExtensionDefinition {
@@ -16,6 +17,7 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     private static final String NAME = "Impulse Control";
     private static final int REQUIRED_BITWIG_API_VERSION = 3;
     private static final String VERSION = "0.0.1";
+
 
     @Override
     public String getHardwareVendor() {
@@ -29,17 +31,17 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
 
     @Override
     public int getNumMidiInPorts() {
-        return ImpulseControl.INPUT_PORT_NAMES.length;
+        return ImpulsePort.inputPorts().length;
     }
 
     @Override
     public int getNumMidiOutPorts() {
-        return ImpulseControl.OUTPUT_PORT_NAMES.length;
+        return ImpulsePort.outputPorts().length;
     }
 
     @Override
     public void listAutoDetectionMidiPortNames(AutoDetectionMidiPortNamesList list, PlatformType platformType) {
-        list.add(ImpulseControl.INPUT_PORT_NAMES, ImpulseControl.OUTPUT_PORT_NAMES);
+        list.add(ImpulsePort.inputPortAutoDetectionNames(), ImpulsePort.outputPortAutoDetectionNames());
     }
 
     @Override
