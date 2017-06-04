@@ -4,17 +4,15 @@ import com.bitwig.extension.controller.api.MidiIn;
 import com.dhemery.midi.ControlChangeMessenger;
 
 public class NoteInputController {
-    // MIDI messages that match these masks are handled by the note input,
-    // and are not sent to our extension's controllers.
-    // TODO: Masks for faders, encoders, and mute/solo buttons when in MIDI mode
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
-            "8?????", // Note Off
-            "9?????", // Note On
-            "A?????", // Key Aftertouch (not sent by Impulse)
-            "B201??", // Mod Wheel (CC 1 on channel 2)
-            "C?????", // Program change (not sent by Impulse)
-            "D?????", // Channel Aftertouch
-            "E?????"  // Pitch Bend
+            // Impulse does not send key aftertouch (A?????) messages, so no need to handle them.
+            "8?????",   // Note Off, any channel.
+            "9?????",   // Note On, any channel.
+            "B201??",   // Mod Wheel (CC 1), channel 2.
+                        // The extension handles all other CC messages.
+            "C?????",   // Program Change (any channel.
+            "D?????",   // Channel Aftertouch, any channel.
+            "E?????"    // Pitch Bend, any channel.
     };
 
     // Encoder CCs when encoders are in MIDI mode
