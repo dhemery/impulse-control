@@ -2,55 +2,48 @@ package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.Transport;
+import com.bitwig.extension.controller.api.MidiIn;
 import com.dhemery.bitwig.Display;
-import com.dhemery.bitwig.Studio;
-import com.dhemery.impulse.Control;
-import com.dhemery.impulse.Controls;
+import com.dhemery.bitwig.NoteInputController;
+import com.dhemery.bitwig.TransportController;
+import com.dhemery.midi.ControlChangeMessenger;
 import com.dhemery.midi.MidiMessenger;
 
 import javax.sound.midi.ShortMessage;
 
 import static com.dhemery.impulse.Port.USB;
-import static javax.sound.midi.ShortMessage.CONTROL_CHANGE;
 
 public class ImpulseControl extends ControllerExtension {
     private final MidiMessenger midiMessenger;
-    private final Studio studio;
     private final Display display;
-    private final Controls controls;
+    private final ControlChangeMessenger controlChangeMessenger;
 
     ImpulseControl(ImpulseControlDefinition definition, ControllerHost host) {
         super(definition, host);
         display = new Display(host, definition.getName());
-        studio = new Studio(this);
-        controls = new Controls(this::warnUnhandled);
-        midiMessenger = new MidiMessenger(controls);
+        controlChangeMessenger = new ControlChangeMessenger(this::warnUnhandled);
+        midiMessenger = new MidiMessenger(controlChangeMessenger);
     }
 
     @Override
     public void init() {
-        studio.createNoteInputsFor(USB);
+        MidiIn midiInPort = getMidiInPort(USB.ordinal());
 
-        getMidiInPort(USB.ordinal()).setMidiCallback(midiMessenger::deliver);
+        new NoteInputController(midiInPort, USB.displayName());
+        new TransportController(getHost().createTransport(), controlChangeMessenger);
 
-        Transport transport = getHost().createTransport();
-
-        controls.install(new Control(CONTROL_CHANGE, 0x1B, m -> { if(m.getData2() > 0 ) transport.rewind(); }));
-        controls.install(new Control(CONTROL_CHANGE, 0x1C, m -> { if(m.getData2() > 0 ) transport.fastForward(); }));
-        controls.install(new Control(CONTROL_CHANGE, 0x1D, m -> { if(m.getData2() > 0 ) transport.stop(); }));
-        controls.install(new Control(CONTROL_CHANGE, 0x1E, m -> { if(m.getData2() > 0 ) transport.play(); }));
+        midiInPort.setMidiCallback(midiMessenger::deliver);
 
         display.status("initialized");
     }
 
     @Override
-    public void flush() {
+    public void exit() {
+        display.status("exited");
     }
 
     @Override
-    public void exit() {
-        display.status("exited");
+    public void flush() {
     }
 
     private void warnUnhandled(ShortMessage message) {

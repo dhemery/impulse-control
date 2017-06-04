@@ -19,7 +19,6 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     private static final int REQUIRED_BITWIG_API_VERSION = 3;
     private static final String VERSION = "0.0.1";
 
-
     @Override
     public String getHardwareVendor() {
         return HARDWARE_VENDOR;
@@ -43,10 +42,6 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     @Override
     public void listAutoDetectionMidiPortNames(AutoDetectionMidiPortNamesList list, PlatformType platformType) {
         list.add(registeredNamesOf(Port.inPorts()), registeredNamesOf(Port.outPorts()));
-    }
-
-    private String[] registeredNamesOf(Port[] ports) {
-        return Arrays.stream(ports).map(Port::registeredName).toArray(String[]::new);
     }
 
     @Override
@@ -77,5 +72,9 @@ public class ImpulseControlDefinition extends ControllerExtensionDefinition {
     @Override
     public int getRequiredAPIVersion() {
         return REQUIRED_BITWIG_API_VERSION;
+    }
+
+    private String[] registeredNamesOf(Port[] ports) {
+        return Arrays.stream(ports).map(Port::registeredName).toArray(String[]::new);
     }
 }

@@ -4,7 +4,7 @@ public enum Port {
     USB("Impulse  Impulse ", "Impulse USB"),
     DIN("Impulse  Impulse MIDI In ", "Impulse DIN");
 
-    private static final Port[] outPorts = { USB };
+    private static final Port[] outPorts = {USB};
 
     private final String registeredName;
     private final String displayName;
@@ -26,5 +26,7 @@ public enum Port {
         return values();
     }
 
-    public static Port[] outPorts() { return outPorts; }
+    public static Port[] outPorts() {
+        return outPorts;
+    }
 }
