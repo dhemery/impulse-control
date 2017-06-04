@@ -4,9 +4,13 @@ import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.dhemery.impulse.Port;
+import com.dhemery.midi.MidiMessenger;
 
+import javax.sound.midi.ShortMessage;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
+import static com.dhemery.impulse.Port.USB;
 import static javax.sound.midi.ShortMessage.NOTE_OFF;
 import static javax.sound.midi.ShortMessage.NOTE_ON;
 
@@ -33,14 +37,5 @@ public class Studio {
                 .map(statusByte -> statusByte >>> 4)
                 .mapToObj(statusNibble -> String.format(STATUS_CODE_MASK_FORMAT, statusNibble))
                 .toArray(String[]::new);
-    }
-
-    public void display(String format, Object... details) {
-        String message = String.format(format, details);
-        host.showPopupNotification(String.format("%s: %s", definition.getName(), message));
-    }
-
-    public void debug(String format, Object... details) {
-        host.println(String.format(format, details));
     }
 }
