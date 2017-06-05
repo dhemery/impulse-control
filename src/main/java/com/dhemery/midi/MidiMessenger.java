@@ -7,7 +7,7 @@ import javax.sound.midi.ShortMessage;
 import java.util.function.Consumer;
 
 /**
- * Delivers each three-byte MIDI message to the destination as a {@link ShortMessage}.
+ * Delivers each three-byte MIDI message to the given consumer as a {@link ShortMessage}.
  */
 public class MidiMessenger {
     private Consumer<ShortMessage> destination;
