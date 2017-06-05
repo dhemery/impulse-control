@@ -1,7 +1,6 @@
 package com.dhemery.bitwig;
 
 import com.bitwig.extension.controller.api.MidiIn;
-import com.dhemery.midi.ControlChangeMessenger;
 
 public class NoteInputController {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -9,7 +8,7 @@ public class NoteInputController {
             "8?????",   // Note Off, any channel.
             "9?????",   // Note On, any channel.
             "B201??",   // Mod Wheel (CC 1), channel 2.
-                        // The extension handles all other CC messages.
+            // The extension handles all other CC messages.
             "C?????",   // Program Change (any channel.
             "D?????",   // Channel Aftertouch, any channel.
             "E?????"    // Pitch Bend, any channel.

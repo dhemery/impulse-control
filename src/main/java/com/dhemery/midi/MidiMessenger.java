@@ -1,30 +1,35 @@
 package com.dhemery.midi;
 
-import com.dhemery.bitwig.impulse.ImpulseControlException;
+import com.bitwig.extension.api.util.midi.ShortMidiMessage;
+import com.bitwig.extension.callback.ShortMidiMessageReceivedCallback;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.ShortMessage;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Delivers each three-byte MIDI message to the given consumer as a {@link ShortMessage}.
+ * Delivers each control change message to the action associated with the control.
  */
-public class MidiMessenger {
-    private Consumer<ShortMessage> destination;
+public class MidiMessenger implements ShortMidiMessageReceivedCallback {
+    private final Map<Control, Consumer<ShortMidiMessage>> actionsByControl = new HashMap<>();
+    private final Consumer<ShortMidiMessage> unknownMidiMessageAction;
 
-    public MidiMessenger(Consumer<ShortMessage> destination) {
-        this.destination = destination;
+    public MidiMessenger(Consumer<ShortMidiMessage> unknownMidiMessageAction) {
+        this.unknownMidiMessageAction = unknownMidiMessageAction;
     }
 
-    public void deliver(int status, int data1, int data2) {
-        destination.accept(shortMessage(status, data1, data2));
+    public void register(Control control, Consumer<ShortMidiMessage> action) {
+        actionsByControl.put(control, action);
     }
 
-    private ShortMessage shortMessage(int status, int data1, int data2) {
-        try {
-            return new ShortMessage(status, data1, data2);
-        } catch (InvalidMidiDataException cause) {
-            throw new ImpulseControlException("Cannot create MIDI short message", cause);
-        }
+    @Override
+    public void midiReceived(ShortMidiMessage message) {
+        actionsByControl
+                .getOrDefault(senderOf(message), unknownMidiMessageAction)
+                .accept(message);
+    }
+
+    private static Control senderOf(ShortMidiMessage message) {
+        return new Control(message.getChannel(), message.getData1());
     }
 }

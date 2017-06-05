@@ -1,10 +1,9 @@
 package com.dhemery.bitwig;
 
+import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.Transport;
 import com.dhemery.midi.Control;
-import com.dhemery.midi.ControlChangeMessenger;
-
-import javax.sound.midi.ShortMessage;
+import com.dhemery.midi.MidiMessenger;
 
 /**
  * Coordinates interaction between the Impulse transport buttons and the Bitwig transport.
@@ -17,7 +16,7 @@ public class TransportController {
     private static final int STOP_BUTTON = 0x1D;
     private final Transport transport;
 
-    public TransportController(Transport transport, ControlChangeMessenger messenger) {
+    public TransportController(Transport transport, MidiMessenger messenger) {
         this.transport = transport;
         messenger.register(new Control(TRANSPORT_BUTTON_CC_CHANNEL, PLAY_BUTTON), this::play);
         messenger.register(new Control(TRANSPORT_BUTTON_CC_CHANNEL, STOP_BUTTON), this::stop);
@@ -25,19 +24,19 @@ public class TransportController {
         messenger.register(new Control(TRANSPORT_BUTTON_CC_CHANNEL, FAST_FORWARD_BUTTON), this::fastForward);
     }
 
-    private void play(ShortMessage message) {
+    private void play(ShortMidiMessage message) {
         if (message.getData2() > 0) transport.play();
     }
 
-    private void stop(ShortMessage message) {
+    private void stop(ShortMidiMessage message) {
         if (message.getData2() > 0) transport.stop();
     }
 
-    private void fastForward(ShortMessage message) {
+    private void fastForward(ShortMidiMessage message) {
         if (message.getData2() > 0) transport.fastForward();
     }
 
-    private void rewind(ShortMessage message) {
+    private void rewind(ShortMidiMessage message) {
         if (message.getData2() > 0) transport.rewind();
     }
 }

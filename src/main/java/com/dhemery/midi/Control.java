@@ -1,7 +1,5 @@
 package com.dhemery.midi;
 
-import javax.sound.midi.ShortMessage;
-
 public class Control {
     private final int command;
     private final int control;
@@ -9,11 +7,6 @@ public class Control {
     public Control(int channel, int control) {
         this.command = channel;
         this.control = control;
-    }
-
-    // Assumes, without verifying, that the message is a CC message.
-    public static Control forSenderOf(ShortMessage message) {
-        return new Control(message.getChannel(), message.getData1());
     }
 
     @Override
