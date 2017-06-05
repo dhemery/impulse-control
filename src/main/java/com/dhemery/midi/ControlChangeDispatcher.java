@@ -10,11 +10,11 @@ import java.util.function.Consumer;
 /**
  * Delivers each control change message to the action associated with the control.
  */
-public class MidiMessenger implements ShortMidiMessageReceivedCallback {
+public class ControlChangeDispatcher implements ShortMidiMessageReceivedCallback {
     private final Map<Control, Consumer<ShortMidiMessage>> actionsByControl = new HashMap<>();
     private final Consumer<ShortMidiMessage> unknownMidiMessageAction;
 
-    public MidiMessenger(Consumer<ShortMidiMessage> unknownMidiMessageAction) {
+    public ControlChangeDispatcher(Consumer<ShortMidiMessage> unknownMidiMessageAction) {
         this.unknownMidiMessageAction = unknownMidiMessageAction;
     }
 

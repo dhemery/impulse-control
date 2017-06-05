@@ -7,18 +7,18 @@ import com.bitwig.extension.controller.api.MidiIn;
 import com.dhemery.bitwig.Display;
 import com.dhemery.bitwig.NoteInputController;
 import com.dhemery.bitwig.TransportController;
-import com.dhemery.midi.MidiMessenger;
+import com.dhemery.midi.ControlChangeDispatcher;
 
 import static com.dhemery.impulse.Port.USB;
 
 public class ImpulseControl extends ControllerExtension {
     private final Display display;
-    private final MidiMessenger controlChangeMessenger;
+    private final ControlChangeDispatcher dispatcher;
 
     ImpulseControl(ImpulseControlDefinition definition, ControllerHost host) {
         super(definition, host);
         display = new Display(host, definition.getName());
-        controlChangeMessenger = new MidiMessenger(this::warnUnhandled);
+        dispatcher = new ControlChangeDispatcher(this::warnUnhandled);
     }
 
     @Override
@@ -26,9 +26,9 @@ public class ImpulseControl extends ControllerExtension {
         MidiIn midiInPort = getMidiInPort(USB.ordinal());
 
         new NoteInputController(midiInPort, USB.displayName());
-        new TransportController(getHost().createTransport(), controlChangeMessenger);
+        new TransportController(getHost().createTransport(), dispatcher);
 
-        midiInPort.setMidiCallback(controlChangeMessenger);
+        midiInPort.setMidiCallback(dispatcher);
 
         display.status("initialized");
     }
