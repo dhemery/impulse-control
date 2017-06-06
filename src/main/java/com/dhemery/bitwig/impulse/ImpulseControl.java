@@ -4,7 +4,10 @@ import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.MidiIn;
+import com.bitwig.extension.controller.api.MidiOut;
+import com.bitwig.extension.controller.api.Transport;
 import com.dhemery.bitwig.Display;
+import com.dhemery.bitwig.MixerController;
 import com.dhemery.bitwig.NoteInputController;
 import com.dhemery.bitwig.TransportController;
 import com.dhemery.impulse.Impulse;
@@ -24,11 +27,16 @@ public class ImpulseControl extends ControllerExtension {
 
     @Override
     public void init() {
-        MidiIn midiInPort = getMidiInPort(USB.ordinal());
+        ControllerHost host = getHost();
+        host.shouldFailOnDeprecatedUse();
+        MidiIn midiInPort = host.getMidiInPort(USB.ordinal());
+        MidiOut midiOutPort = host.getMidiOutPort(USB.ordinal());
+        Transport transport = host.createTransport();
 
         new NoteInputController(midiInPort, USB.displayName(), dispatcher, display);
-        new TransportController(getHost().createTransport(), dispatcher);
-        new Impulse(getMidiOutPort(USB.ordinal()));
+        new TransportController(transport, dispatcher);
+        new MixerController(host, dispatcher, display);
+        new Impulse(midiOutPort);
 
         midiInPort.setMidiCallback(dispatcher);
 
