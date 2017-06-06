@@ -1,6 +1,9 @@
 package com.dhemery.bitwig;
 
+import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.MidiIn;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlChangeDispatcher;
 
 public class NoteInputController {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -28,8 +31,16 @@ public class NoteInputController {
     private static final int MIDI_MUTE_SOLO_BUTTON_CHANNEL = 0;
     private static final int MIDI_MUTE_SOLO_BUTTON_BASE_CONTROL = 0x33;
     private static final int MIDI_MUTE_SOLO_BUTTON_COUNT = 9;
+    private final Display display;
 
-    public NoteInputController(MidiIn port, String name) {
+    public NoteInputController(MidiIn port, String name, ControlChangeDispatcher dispatcher, Display display) {
+        this.display = display;
         port.createNoteInput(name, NOTE_INPUT_MESSAGE_MASKS);
+        for (int i = MIDI_ENCODER_BASE_CONTROL; i < MIDI_ENCODER_BASE_CONTROL + MIDI_ENCODER_COUNT; i++)
+            dispatcher.register(new Control(MIDI_ENCODER_CHANNEL, i), this::onEncoderChange);
+    }
+
+    private void onEncoderChange(ShortMidiMessage message) {
+        display.debug(String.format("New value %2x for MIDI encoder %2x", message.getData2(), message.getData1()));
     }
 }
