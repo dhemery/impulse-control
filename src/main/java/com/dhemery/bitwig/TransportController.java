@@ -32,28 +32,28 @@ public class TransportController {
         messenger.register(new ControlIdentifier(TRANSPORT_BUTTON_CC_CHANNEL, RECORD_BUTTON), this::record);
     }
 
-    private void play(ShortMidiMessage message) {
-        if (message.getData2() > 0) transport.play();
+    private void play(int value) {
+        if (value > 0) transport.play();
     }
 
-    private void stop(ShortMidiMessage message) {
-        if (message.getData2() > 0) transport.stop();
+    private void stop(int value) {
+        if (value > 0) transport.stop();
     }
 
-    private void fastForward(ShortMidiMessage message) {
-        if (message.getData2() > 0) transport.fastForward();
+    private void fastForward(int value) {
+        if (value > 0) transport.fastForward();
     }
 
-    private void rewind(ShortMidiMessage message) {
-        if (message.getData2() > 0) transport.rewind();
+    private void rewind(int value) {
+        if (value > 0) transport.rewind();
     }
 
-    private void loop(ShortMidiMessage message) {
-        if (message.getData2() > 0) loopEnabled.toggle();
+    private void loop(int value) {
+        if (value > 0) loopEnabled.toggle();
     }
 
-    private void record(ShortMidiMessage message) {
-        if (message.getData2() > 0) transport.record();
+    private void record(int value) {
+        if (value > 0) transport.record();
     }
 }
 

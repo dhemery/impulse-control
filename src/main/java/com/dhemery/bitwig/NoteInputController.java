@@ -5,6 +5,8 @@ import com.bitwig.extension.controller.api.MidiIn;
 import com.dhemery.midi.ControlIdentifier;
 import com.dhemery.midi.ControlChangeDispatcher;
 
+import java.util.function.IntConsumer;
+
 public class NoteInputController {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
             // Impulse does not send key aftertouch (A?????) messages, so no need to handle them.
@@ -37,10 +39,10 @@ public class NoteInputController {
         this.display = display;
         port.createNoteInput(name, NOTE_INPUT_MESSAGE_MASKS);
         for (int i = MIDI_ENCODER_BASE_CONTROL; i < MIDI_ENCODER_BASE_CONTROL + MIDI_ENCODER_COUNT; i++)
-            dispatcher.register(new ControlIdentifier(MIDI_ENCODER_CHANNEL, i), this::onEncoderChange);
+            dispatcher.register(new ControlIdentifier(MIDI_ENCODER_CHANNEL, i), unhandled(i));
     }
 
-    private void onEncoderChange(ShortMidiMessage message) {
-        display.debug(String.format("New value %2x for MIDI encoder %2x", message.getData2(), message.getData1()));
+    private IntConsumer unhandled(int cc) {
+        return v -> display.debug(String.format("New value %2x for MIDI encoder %2x", v, cc));
     }
 }
