@@ -1,7 +1,7 @@
 package com.dhemery.midi;
 
 /**
- * Identifies a controlNumber message by its channel and controlNumber number.
+ * Identifies a control by its channel and cc number.
  */
 public class ControlIdentifier {
     public final int channel;
