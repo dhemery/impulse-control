@@ -6,6 +6,8 @@ import com.bitwig.extension.controller.api.NoteInput;
 import com.dhemery.midi.ControlChangeDispatcher;
 import com.dhemery.midi.ControlIdentifier;
 
+import java.util.function.IntConsumer;
+
 public class NoteInputController {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
             "8?????",   // Note Off, any channel.
@@ -56,7 +58,10 @@ public class NoteInputController {
     }
 
     private void registerControl(int channel, int cc) {
-        ControlIdentifier identifier = new ControlIdentifier(channel, cc);
-        dispatcher.register(identifier, newValue -> noteInput.sendRawMidiEvent(ShortMidiMessage.CONTROL_CHANGE, cc, newValue));
+        dispatcher.register(new ControlIdentifier(channel, cc), forwardToNoteInput(cc));
+    }
+
+    private IntConsumer forwardToNoteInput(int cc) {
+        return newValue -> noteInput.sendRawMidiEvent(ShortMidiMessage.CONTROL_CHANGE, cc, newValue);
     }
 }
