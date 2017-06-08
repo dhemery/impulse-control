@@ -2,7 +2,7 @@ package com.dhemery.bitwig;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.MidiIn;
-import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 public class NoteInputController {
@@ -37,7 +37,7 @@ public class NoteInputController {
         this.display = display;
         port.createNoteInput(name, NOTE_INPUT_MESSAGE_MASKS);
         for (int i = MIDI_ENCODER_BASE_CONTROL; i < MIDI_ENCODER_BASE_CONTROL + MIDI_ENCODER_COUNT; i++)
-            dispatcher.register(new Control(MIDI_ENCODER_CHANNEL, i), this::onEncoderChange);
+            dispatcher.register(new ControlIdentifier(MIDI_ENCODER_CHANNEL, i), this::onEncoderChange);
     }
 
     private void onEncoderChange(ShortMidiMessage message) {

@@ -11,25 +11,25 @@ import java.util.function.Consumer;
  * Delivers each control change message to the action associated with the control.
  */
 public class ControlChangeDispatcher implements ShortMidiMessageReceivedCallback {
-    private final Map<Control, Consumer<ShortMidiMessage>> actionsByControl = new HashMap<>();
+    private final Map<ControlIdentifier, Consumer<ShortMidiMessage>> actionsByControl = new HashMap<>();
     private final Consumer<ShortMidiMessage> unknownMidiMessageAction;
 
     public ControlChangeDispatcher(Consumer<ShortMidiMessage> unknownMidiMessageAction) {
         this.unknownMidiMessageAction = unknownMidiMessageAction;
     }
 
-    public void register(Control control, Consumer<ShortMidiMessage> action) {
-        actionsByControl.put(control, action);
+    public void register(ControlIdentifier identifier, Consumer<ShortMidiMessage> action) {
+        actionsByControl.put(identifier, action);
     }
 
     @Override
     public void midiReceived(ShortMidiMessage message) {
         actionsByControl
-                .getOrDefault(senderOf(message), unknownMidiMessageAction)
+                .getOrDefault(sourceOf(message), unknownMidiMessageAction)
                 .accept(message);
     }
 
-    private static Control senderOf(ShortMidiMessage message) {
-        return new Control(message.getChannel(), message.getData1());
+    private static ControlIdentifier sourceOf(ShortMidiMessage message) {
+        return new ControlIdentifier(message.getChannel(), message.getData1());
     }
 }

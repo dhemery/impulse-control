@@ -2,7 +2,7 @@ package com.dhemery.bitwig;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.*;
-import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 public class MixerController {
@@ -28,12 +28,12 @@ public class MixerController {
             channel.getPan().markInterested();
         }
         for(int faderIndex = 0 ; faderIndex < TRACK_BANK_TRACK_COUNT ; faderIndex++) {
-            dispatcher.register(new Control(FADER_CHANNEL, faderCC(faderIndex)), this::onFaderChange);
+            dispatcher.register(new ControlIdentifier(FADER_CHANNEL, faderCC(faderIndex)), this::onFaderChange);
         }
 
         // TODO: Plugin mode sends encoder changes to the currently selected device's Remote Controls.
         for(int encoderIndex = 0 ; encoderIndex < TRACK_BANK_TRACK_COUNT ; encoderIndex++) {
-            dispatcher.register(new Control(ENCODER_CHANNEL, encoderCC(encoderIndex)), this::onEncoderChange);
+            dispatcher.register(new ControlIdentifier(ENCODER_CHANNEL, encoderCC(encoderIndex)), this::onEncoderChange);
         }
     }
 
