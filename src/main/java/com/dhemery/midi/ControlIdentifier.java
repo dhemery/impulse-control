@@ -4,12 +4,12 @@ package com.dhemery.midi;
  * Identifies a controlNumber message by its channel and controlNumber number.
  */
 public class ControlIdentifier {
-    private final int channel;
-    private final int controlNumber;
+    public final int channel;
+    public final int cc;
 
-    public ControlIdentifier(int channel, int controlNumber) {
+    public ControlIdentifier(int channel, int cc) {
         this.channel = channel;
-        this.controlNumber = controlNumber;
+        this.cc = cc;
     }
 
     @Override
@@ -20,11 +20,11 @@ public class ControlIdentifier {
         ControlIdentifier that = (ControlIdentifier) o;
 
         if (channel != that.channel) return false;
-        return controlNumber == that.controlNumber;
+        return cc == that.cc;
     }
 
     @Override
     public int hashCode() {
-        return 31 * channel + controlNumber;
+        return 31 * channel + cc;
     }
 }
