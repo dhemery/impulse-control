@@ -2,8 +2,8 @@ package com.dhemery.bitwig;
 
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.Transport;
+import com.dhemery.impulse.ControlIdentifier;
 import com.dhemery.midi.ControlChangeDispatcher;
-import com.dhemery.midi.ControlIdentifier;
 
 import java.util.function.IntConsumer;
 

@@ -4,51 +4,45 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
+import com.dhemery.impulse.Control;
+import com.dhemery.impulse.ControlRange;
+import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeDispatcher;
-import com.dhemery.midi.ControlIdentifier;
+
+import java.util.List;
 
 public class MixerController {
-    private static final int TRACK_BANK_TRACK_COUNT = 8;
-    private static final int ENCODER_BASE_CONTROL = 0x00;
-    private static final int ENCODER_CHANNEL = 1;
-    private static final int FADER_BASE_CONTROL = 0x00;
-    private static final int FADER_CHANNEL = 0;
     private static final int VOLUME_FADER_RESOLUTION = 128;
     // TODO: Add extension preference for pan sensitivity?
     // TODO: Shift button temporarily increases sensitivity?
     private static final int PAN_ENCODER_RESOLUTION = 201; // Range from -100% to 100% in 1% increments
-    private static final int ENCODER_BASE_VALUE = 0x40;
     private final Display display;
 
     // TODO: Plugin mode sends encoder changes to the currently selected device's Remote Controls.
-    public MixerController(ControllerHost host, ControlChangeDispatcher dispatcher, Display display) {
+    public MixerController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher, Display display) {
         this.display = display;
-        TrackBank trackBank = host.createTrackBank(8, 1, 1);
-        for (int channelIndex = 0; channelIndex < TRACK_BANK_TRACK_COUNT; channelIndex++) {
-            Track channel = trackBank.getChannel(channelIndex);
-            connectChannelVolumeFader(dispatcher, channelIndex, channel);
-            connectChannelPanEncoder(dispatcher, channelIndex, channel);
+        List<Control> buttons = impulse.mixerButtons();
+        List<Control> encoders = impulse.mixerEncoders();
+        List<Control> faders = impulse.mixerFaders();
+        TrackBank trackBank = host.createTrackBank(encoders.size(), 0, 0);
+        for (int c = 0; c < trackBank.getSizeOfBank(); c++) {
+            Track channel = trackBank.getChannel(c);
+            connectChannelVolumeFader(dispatcher, channel, faders.get(c));
+            connectChannelPanEncoder(dispatcher, channel, encoders.get(c));
         }
     }
 
-    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, int channelIndex, Track channel) {
+    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, Control encoder) {
         Parameter channelPan = channel.getPan();
         channelPan.markInterested();
-        dispatcher.register(encoderIdentifier(channelIndex), step -> channelPan.inc(step - ENCODER_BASE_VALUE, PAN_ENCODER_RESOLUTION));
+        ControlRange range = encoder.range;
+        dispatcher.register(encoder.identifier, v -> channelPan.inc(range.indexOf(v) * 2 - 1, PAN_ENCODER_RESOLUTION));
     }
 
-    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, int channelIndex, Track channel) {
+    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, Control fader) {
         Parameter channelVolume = channel.getVolume();
         channelVolume.markInterested();
-        dispatcher.register(faderIdentifier(channelIndex), volume -> channelVolume.set(volume, VOLUME_FADER_RESOLUTION));
-    }
-
-    private static ControlIdentifier faderIdentifier(int faderIndex) {
-        return new ControlIdentifier(FADER_CHANNEL, faderIndex + FADER_BASE_CONTROL);
-    }
-
-    private static ControlIdentifier encoderIdentifier(int encoderIndex) {
-        return new ControlIdentifier(ENCODER_CHANNEL, encoderIndex + ENCODER_BASE_CONTROL);
+        dispatcher.register(fader.identifier, volume -> channelVolume.set(volume, VOLUME_FADER_RESOLUTION));
     }
 }
 

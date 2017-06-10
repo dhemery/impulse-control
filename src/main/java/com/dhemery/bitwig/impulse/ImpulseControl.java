@@ -32,11 +32,11 @@ public class ImpulseControl extends ControllerExtension {
         MidiIn midiInPort = host.getMidiInPort(USB.ordinal());
         MidiOut midiOutPort = host.getMidiOutPort(USB.ordinal());
         Transport transport = host.createTransport();
+        Impulse impulse = new Impulse(midiOutPort);
 
         new NoteInputController(midiInPort, USB.displayName(), dispatcher, display);
         new TransportController(transport, dispatcher);
-        new MixerController(host, dispatcher, display);
-        new Impulse(midiOutPort);
+        new MixerController(host, impulse, dispatcher, display);
 
         midiInPort.setMidiCallback(dispatcher);
 

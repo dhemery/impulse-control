@@ -1,4 +1,4 @@
-package com.dhemery.midi;
+package com.dhemery.impulse;
 
 /**
  * Identifies a control by its channel and cc number.

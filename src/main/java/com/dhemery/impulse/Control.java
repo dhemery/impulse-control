@@ -1,21 +1,19 @@
 package com.dhemery.impulse;
 
-import com.dhemery.midi.ControlIdentifier;
-
+/**
+ * Represents a control on a Novation Impulse.
+ */
 public class Control {
-    private final String name;
-    private final ControlIdentifier identifier;
+    public final ControlIdentifier identifier;
+    public final ControlRange range;
 
-    protected Control(String name, int channel, int cc) {
-        this(name, new ControlIdentifier(channel, cc));
-    }
-
-    protected Control(String name, ControlIdentifier identifier) {
-        this.name = name;
+    /**
+     * Creates a control.
+     * @param identifier identifies the control
+     * @param range describes the set of CC values the control can send
+     */
+    public Control(ControlIdentifier identifier, ControlRange range) {
         this.identifier = identifier;
-    }
-
-    public ControlIdentifier identifier() {
-        return identifier;
+        this.range = range;
     }
 }

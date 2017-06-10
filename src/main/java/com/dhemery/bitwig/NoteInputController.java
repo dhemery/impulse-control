@@ -3,8 +3,8 @@ package com.dhemery.bitwig;
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.MidiIn;
 import com.bitwig.extension.controller.api.NoteInput;
+import com.dhemery.impulse.ControlIdentifier;
 import com.dhemery.midi.ControlChangeDispatcher;
-import com.dhemery.midi.ControlIdentifier;
 
 import java.util.function.IntConsumer;
 

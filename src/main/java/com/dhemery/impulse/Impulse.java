@@ -23,97 +23,60 @@ public class Impulse {
     private static final int FADER_COUNT = 9;
     private static final int MIDI_BUTTON_CHANNEL = 0;
     private static final int MIDI_BUTTON_BASE_CC = 0x33;
-    private static final int MIDI_BUTTON_OFF_VALUE = 0;
-    private static final int MIDI_BUTTON_ON_VALUE = 0x7f;
     private static final int MIDI_ENCODER_CHANNEL = 1;
     private static final int MIDI_ENCODER_BASE_CC = 0x15;
     private static final int MIDI_FADER_CHANNEL = 0;
     private static final int MIDI_FADER_BASE_CC = 0x29;
     private static final int MIXER_BUTTON_CHANNEL = 0;
     private static final int MIXER_BUTTON_BASE_CC = 0x09;
-    private static final int MIXER_BUTTON_OFF_VALUE = 0;
-    private static final int MIXER_BUTTON_ON_VALUE = 1;
     private static final int MIXER_ENCODER_CHANNEL = 1;
     private static final int MIXER_ENCODER_BASE_CC = 0x00;
-    private static final int MIXER_ENCODER_DECREMENT_VALUE = 0x3f;
-    private static final int MIXER_ENCODER_INCREMENT_VALUE = 0x41;
     private static final int MIXER_FADER_CHANNEL = 0;
     private static final int MIXER_FADER_BASE_CC = 0x00;
-    private final List<ToggleButton> midiButtons;
-    private final List<AbsolutePosition> midiEncoders;
-    private final List<AbsolutePosition> midiFaders;
-    private final List<ToggleButton> mixerButtons;
-    private final List<RelativePosition> mixerEncoders;
-    private final List<AbsolutePosition> mixerFaders;
+    private static final ControlRange FULL_CC_RANGE = new ControlRange(0, 128, 1);
+    private static final ControlRange MIDI_BUTTON_RANGE = new ControlRange(0, 2,0x7f);
+    private static final ControlRange TOGGLE_BUTTON_RANGE = new ControlRange(0, 2, 1);
+    private static final ControlRange STEP_ENCODER_RANGE = new ControlRange(0x3f,2, 2);
+    private final List<Control> midiButtons = makeControls(MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC, MIDI_BUTTON_RANGE, BUTTON_COUNT);
+    private final List<Control> midiEncoders = makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, FULL_CC_RANGE, ENCODER_COUNT);
+    private final List<Control> midiFaders = makeControls(MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC, FULL_CC_RANGE, FADER_COUNT);
+    private final List<Control> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, TOGGLE_BUTTON_RANGE, BUTTON_COUNT);
+    private final List<Control> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, STEP_ENCODER_RANGE, ENCODER_COUNT);
+    private final List<Control> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FULL_CC_RANGE, FADER_COUNT);
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
-        midiButtons = IntStream.range(0, BUTTON_COUNT)
-                .mapToObj(Impulse::midiButton)
-                .collect(Collectors.toList());
-        midiEncoders = IntStream.range(0, ENCODER_COUNT)
-                .mapToObj(Impulse::midiEncoder)
-                .collect(Collectors.toList());
-        midiFaders = IntStream.range(0, FADER_COUNT)
-                .mapToObj(Impulse::midiFader)
-                .collect(Collectors.toList());
-        mixerButtons = IntStream.range(0, BUTTON_COUNT)
-                .mapToObj(Impulse::mixerButton)
-                .collect(Collectors.toList());
-        mixerEncoders = IntStream.range(0, ENCODER_COUNT)
-                .mapToObj(Impulse::mixerEncoder)
-                .collect(Collectors.toList());
-        mixerFaders = IntStream.range(0, FADER_COUNT)
-                .mapToObj(Impulse::mixerFader)
+    }
+
+    private static List<Control> makeControls(int channel, int ccBase, ControlRange range, int count) {
+        return IntStream.range(0, count)
+                .mapToObj(index -> new ControlIdentifier(channel,ccBase+index))
+                .map(identifier -> new Control(identifier, range))
                 .collect(Collectors.toList());
     }
 
-    public List<ToggleButton> midiButtons() {
+    public List<Control> midiButtons() {
         return midiButtons;
     }
 
-    public List<AbsolutePosition> midiEncoders() {
+    public List<Control> midiEncoders() {
         return midiEncoders;
     }
 
-    public List<AbsolutePosition> midiFaders() {
+    public List<Control> midiFaders() {
         return midiFaders;
     }
 
-    public List<ToggleButton> mixerButtons() {
+    public List<Control> mixerButtons() {
         return mixerButtons;
     }
 
-    public List<RelativePosition> mixerEncoders() {
+    public List<Control> mixerEncoders() {
         return mixerEncoders;
     }
 
-    public List<AbsolutePosition> mixerFaders() {
+    public List<Control> mixerFaders() {
         return mixerFaders;
-    }
-
-    private static ToggleButton midiButton(int index) {
-        return new ToggleButton(String.format("MIDI Button %d", index+1), MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC + index, MIDI_BUTTON_ON_VALUE, MIDI_BUTTON_OFF_VALUE);
-    }
-
-    private static AbsolutePosition midiEncoder(int index) {
-        return new AbsolutePosition(String.format("MIDI Encoder %d", index+1), MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC + index);
-    }
-
-    private static AbsolutePosition midiFader(int index) {
-        return new AbsolutePosition(String.format("MIDI Fader %d", index+1), MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC + index);
-    }
-
-    private static ToggleButton mixerButton(int index) {
-        return new ToggleButton(String.format("Mixer Button %d", index+1), MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC + index, MIXER_BUTTON_ON_VALUE, MIXER_BUTTON_OFF_VALUE);
-    }
-
-    private static RelativePosition mixerEncoder(int index) {
-        return new RelativePosition(String.format("Mixer/Plugin Encodeer %d", index+1), MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC + index, MIXER_ENCODER_DECREMENT_VALUE, MIXER_ENCODER_INCREMENT_VALUE);
-    }
-
-    private static AbsolutePosition mixerFader(int index) {
-        return new AbsolutePosition(String.format("Mixer Fader %d", index+1), MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC + index);
     }
 
     private static String sysexMessage(String content) {
