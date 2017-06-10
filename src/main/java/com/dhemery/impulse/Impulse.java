@@ -23,7 +23,7 @@ public class Impulse {
     private static final int FADER_COUNT = 9;
     private static final int MIDI_BUTTON_CHANNEL = 0;
     private static final int MIDI_BUTTON_BASE_CC = 0x33;
-    private static final int MIDI_ENCODER_CHANNEL = 1;
+    private static final int MIDI_ENCODER_CHANNEL = 0;
     private static final int MIDI_ENCODER_BASE_CC = 0x15;
     private static final int MIDI_FADER_CHANNEL = 0;
     private static final int MIDI_FADER_BASE_CC = 0x29;
@@ -46,13 +46,6 @@ public class Impulse {
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
-    }
-
-    private static List<Control> makeControls(int channel, int ccBase, ControlRange range, int count) {
-        return IntStream.range(0, count)
-                .mapToObj(index -> new ControlIdentifier(channel,ccBase+index))
-                .map(identifier -> new Control(identifier, range))
-                .collect(Collectors.toList());
     }
 
     public List<Control> midiButtons() {
@@ -81,5 +74,12 @@ public class Impulse {
 
     private static String sysexMessage(String content) {
         return String.format(MESSAGE_FORMAT, content);
+    }
+
+    private static List<Control> makeControls(int channel, int ccBase, ControlRange range, int count) {
+        return IntStream.range(0, count)
+                .mapToObj(index -> new ControlIdentifier(channel,ccBase+index))
+                .map(identifier -> new Control(identifier, range))
+                .collect(Collectors.toList());
     }
 }

@@ -34,7 +34,7 @@ public class ImpulseControl extends ControllerExtension {
         Transport transport = host.createTransport();
         Impulse impulse = new Impulse(midiOutPort);
 
-        new NoteInputController(midiInPort, USB.displayName(), dispatcher, display);
+        new NoteInputController(midiInPort, USB.displayName(), impulse, dispatcher, display);
         new TransportController(transport, dispatcher);
         new MixerController(host, impulse, dispatcher, display);
 
