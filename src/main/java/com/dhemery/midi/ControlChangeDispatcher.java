@@ -22,8 +22,12 @@ public class ControlChangeDispatcher implements ShortMidiMessageReceivedCallback
         this.unknownMidiMessageAction = unknownMidiMessageAction;
     }
 
-    public void register(ControlIdentifier identifier, IntConsumer action) {
-        actionsByControl.put(identifier, action);
+//    public void register(ControlIdentifier identifier, IntConsumer action) {
+//        actionsByControl.put(identifier, action);
+//    }
+
+    public void register(Control control, IntConsumer action) {
+        actionsByControl.put(control.identifier, action);
     }
 
     @Override
