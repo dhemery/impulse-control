@@ -35,6 +35,7 @@ public class MixerController {
     private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, Control encoder) {
         Parameter channelPan = channel.getPan();
         channelPan.markInterested();
+        channelPan.setIndication(true);
         ControlRange range = encoder.range;
         dispatcher.register(encoder, v -> channelPan.inc(range.indexOf(v) * 2 - 1, PAN_ENCODER_RESOLUTION));
     }
@@ -42,6 +43,7 @@ public class MixerController {
     private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, Control fader) {
         Parameter channelVolume = channel.getVolume();
         channelVolume.markInterested();
+        channelVolume.setIndication(true);
         dispatcher.register(fader, volume -> channelVolume.set(volume, VOLUME_FADER_RESOLUTION));
     }
 }
