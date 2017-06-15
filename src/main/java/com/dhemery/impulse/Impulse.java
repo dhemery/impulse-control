@@ -3,6 +3,7 @@ package com.dhemery.impulse;
 import com.bitwig.extension.controller.api.MidiOut;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,11 +20,6 @@ public class Impulse {
             SYSEX_MESSAGE_END);
     private static final String CONNECT_TO_COMPUTER = sysexMessage("06 01 01 01");
 
-    private static final ControlRange FULL_CC_RANGE = new ControlRange(0, 128, 1);
-    private static final ControlRange MIDI_BUTTON_RANGE = new ControlRange(0, 2,0x7f);
-    private static final ControlRange TOGGLE_BUTTON_RANGE = new ControlRange(0, 2, 1);
-    private static final ControlRange MOMENTARY_BUTTON_RANGE = new ControlRange(0, 2, 1);
-    private static final ControlRange STEP_ENCODER_RANGE = new ControlRange(0x3f,2, 2);
     private static final int BUTTON_COUNT = 9;
     private static final int ENCODER_COUNT = 8;
     private static final int FADER_COUNT = 9;
@@ -48,68 +44,68 @@ public class Impulse {
     private static final int LOOP_BUTTON_CC = 0x1F;
     private static final int RECORD_BUTTON_CC = 0x20;
 
-    private final List<Control> midiButtons = makeControls(MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC, MIDI_BUTTON_RANGE, BUTTON_COUNT);
-    private final List<Control> midiEncoders = makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, FULL_CC_RANGE, ENCODER_COUNT);
-    private final List<Control> midiFaders = makeControls(MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC, FULL_CC_RANGE, FADER_COUNT);
-    private final List<Control> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, TOGGLE_BUTTON_RANGE, BUTTON_COUNT);
-    private final List<Control> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, STEP_ENCODER_RANGE, ENCODER_COUNT);
-    private final List<Control> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FULL_CC_RANGE, FADER_COUNT);
-    private final Control playButton = makeTransportButton(PLAY_BUTTON_CC);
-    private final Control stopButton = makeTransportButton(STOP_BUTTON_CC);
-    private final Control rewindButton = makeTransportButton(REWIND_BUTTON_CC);
-    private final Control fastForwardButton = makeTransportButton(FAST_FORWARD_BUTTON_CC);
-    private final Control recordButton = makeTransportButton(RECORD_BUTTON_CC);
-    private final Control loopButton = makeTransportButton(LOOP_BUTTON_CC);
+    private final List<ToggleButton> midiButtons = makeControls(MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC, BUTTON_COUNT, ToggleButton::new);
+    private final List<LinearEncoder> midiEncoders = makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, ENCODER_COUNT, LinearEncoder::new);
+    private final List<LinearEncoder> midiFaders = makeControls(MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC, FADER_COUNT, LinearEncoder::new);
+    private final List<MomentaryButton> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, MomentaryButton::new);
+    private final List<RotaryEncoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, RotaryEncoder::new);
+    private final List<LinearEncoder> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, LinearEncoder::new);
+    private final MomentaryButton playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton rewindButton = makeControl(TRANSPORT_CC_CHANNEL, REWIND_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, MomentaryButton::new);
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
     }
 
-    public List<Control> midiButtons() {
+    public List<ToggleButton> midiButtons() {
         return midiButtons;
     }
 
-    public List<Control> midiEncoders() {
+    public List<LinearEncoder> midiEncoders() {
         return midiEncoders;
     }
 
-    public List<Control> midiFaders() {
+    public List<LinearEncoder> midiFaders() {
         return midiFaders;
     }
 
-    public List<Control> mixerButtons() {
+    public List<MomentaryButton> mixerButtons() {
         return mixerButtons;
     }
 
-    public List<Control> mixerEncoders() {
+    public List<RotaryEncoder> mixerEncoders() {
         return mixerEncoders;
     }
 
-    public List<Control> mixerFaders() {
+    public List<LinearEncoder> mixerFaders() {
         return mixerFaders;
     }
 
-    public Control playButton() {
+    public MomentaryButton playButton() {
         return playButton;
     }
 
-    public Control stopButton() {
+    public MomentaryButton stopButton() {
         return stopButton;
     }
 
-    public Control rewindButton() {
+    public MomentaryButton rewindButton() {
         return rewindButton;
     }
 
-    public Control fastForwardButton() {
+    public MomentaryButton fastForwardButton() {
         return fastForwardButton;
     }
 
-    public Control recordButton() {
+    public MomentaryButton recordButton() {
         return recordButton;
     }
 
-    public Control loopButton() {
+    public MomentaryButton loopButton() {
         return loopButton;
     }
 
@@ -117,17 +113,14 @@ public class Impulse {
         return String.format(MESSAGE_FORMAT, content);
     }
 
-    private static List<Control> makeControls(int channel, int ccBase, ControlRange range, int count) {
+
+    private static <T> T makeControl(int channel, int cc, Function<ControlIdentifier, T> controlBuilder) {
+        return controlBuilder.apply(new ControlIdentifier(channel, cc));
+    }
+
+    private static <T> List<T> makeControls(int channel, int baseCC, int count, Function<ControlIdentifier, T> controlBuilder) {
         return IntStream.range(0, count)
-                .mapToObj(index -> makeControl(channel,ccBase+index, range))
+                .mapToObj(index -> makeControl(channel, baseCC+index, controlBuilder))
                 .collect(Collectors.toList());
-    }
-
-    private static Control makeTransportButton(int cc) {
-        return makeControl(TRANSPORT_CC_CHANNEL, cc, MOMENTARY_BUTTON_RANGE);
-    }
-
-    private static Control makeControl(int channel, int cc, ControlRange range) {
-        return new Control(new ControlIdentifier(channel, cc), range);
     }
 }

@@ -5,15 +5,8 @@ package com.dhemery.impulse;
  */
 public class Control {
     public final ControlIdentifier identifier;
-    public final ControlRange range;
 
-    /**
-     * Creates a control.
-     * @param identifier identifies the control
-     * @param range describes the set of CC values the control can send
-     */
-    public Control(ControlIdentifier identifier, ControlRange range) {
+    public  Control(ControlIdentifier identifier) {
         this.identifier = identifier;
-        this.range = range;
     }
 }

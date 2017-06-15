@@ -4,9 +4,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
-import com.dhemery.impulse.Control;
-import com.dhemery.impulse.ControlRange;
-import com.dhemery.impulse.Impulse;
+import com.dhemery.impulse.*;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
@@ -21,9 +19,9 @@ public class MixerController {
     // TODO: Plugin mode sends encoder changes to the currently selected device's Remote Controls.
     public MixerController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher, Display display) {
         this.display = display;
-        List<Control> buttons = impulse.mixerButtons();
-        List<Control> encoders = impulse.mixerEncoders();
-        List<Control> faders = impulse.mixerFaders();
+        List<MomentaryButton> buttons = impulse.mixerButtons();
+        List<RotaryEncoder> encoders = impulse.mixerEncoders();
+        List<LinearEncoder> faders = impulse.mixerFaders();
         TrackBank trackBank = host.createTrackBank(encoders.size(), 0, 0);
         for (int c = 0; c < trackBank.getSizeOfBank(); c++) {
             Track channel = trackBank.getChannel(c);
@@ -32,15 +30,14 @@ public class MixerController {
         }
     }
 
-    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, Control encoder) {
+    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, RotaryEncoder encoder) {
         Parameter channelPan = channel.getPan();
         channelPan.markInterested();
         channelPan.setIndication(true);
-        ControlRange range = encoder.range;
-        dispatcher.register(encoder, v -> channelPan.inc(range.indexOf(v) * 2 - 1, PAN_ENCODER_RESOLUTION));
+        dispatcher.register(encoder, v -> channelPan.inc(encoder.directionOf(v), PAN_ENCODER_RESOLUTION));
     }
 
-    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, Control fader) {
+    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, LinearEncoder fader) {
         Parameter channelVolume = channel.getVolume();
         channelVolume.markInterested();
         channelVolume.setIndication(true);
