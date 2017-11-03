@@ -11,18 +11,18 @@ import com.dhemery.bitwig.MixerController;
 import com.dhemery.bitwig.NoteInputController;
 import com.dhemery.bitwig.TransportController;
 import com.dhemery.impulse.Impulse;
-import com.dhemery.midi.ControlChangeDispatcher;
+import com.dhemery.midi.ControlChangeProcessor;
 
 import static com.dhemery.impulse.Port.USB;
 
 public class ImpulseControl extends ControllerExtension {
     private final Display display;
-    private final ControlChangeDispatcher dispatcher;
+    private final ControlChangeProcessor dispatcher;
 
     ImpulseControl(ImpulseControlDefinition definition, ControllerHost host) {
         super(definition, host);
         display = new Display(host, definition.getName());
-        dispatcher = new ControlChangeDispatcher(this::warnUnhandled);
+        dispatcher = new ControlChangeProcessor(this::warnUnhandled);
     }
 
     @Override
