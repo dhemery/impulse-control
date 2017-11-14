@@ -10,11 +10,9 @@ import com.dhemery.midi.ControlChangeDispatcher;
  * Coordinates interaction between the Impulse transport buttons and the Bitwig transport.
  */
 public class TransportController {
-    private final Transport transport;
     private final ControlChangeDispatcher dispatcher;
 
     public TransportController(Transport transport, Impulse impulse, ControlChangeDispatcher dispatcher) {
-        this.transport = transport;
         this.dispatcher = dispatcher;
         SettableBooleanValue loopEnabled = transport.isArrangerLoopEnabled();
         loopEnabled.markInterested();

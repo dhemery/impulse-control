@@ -9,10 +9,10 @@ import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
 
-public class PluginEncoders {
+public class PluginController {
     private static final int REMOTE_CONTROL_ENCODER_RESOLUTION = 101;
 
-    public PluginEncoders(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher) {
+    public PluginController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher) {
         List<RotaryEncoder> encoders = impulse.mixerEncoders();
 
         CursorTrack cursorTrack = host.createCursorTrack(2, 0);

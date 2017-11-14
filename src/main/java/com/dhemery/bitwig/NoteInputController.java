@@ -18,12 +18,10 @@ public class NoteInputController {
             "E?????"    // Pitch Bend, any channel.
     };
     private final ControlChangeDispatcher dispatcher;
-    private final Display display;
     private final NoteInput noteInput;
 
-    public NoteInputController(MidiIn port, String name, Impulse impulse, ControlChangeDispatcher dispatcher, Display display) {
+    public NoteInputController(MidiIn port, String name, Impulse impulse, ControlChangeDispatcher dispatcher) {
         this.dispatcher = dispatcher;
-        this.display = display;
         noteInput = port.createNoteInput(name, NOTE_INPUT_MESSAGE_MASKS);
         impulse.midiButtons().forEach(this::forwardAllCCMessagesToNoteInput);
         impulse.midiEncoders().forEach(this::forwardAllCCMessagesToNoteInput);
