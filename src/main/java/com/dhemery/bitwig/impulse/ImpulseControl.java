@@ -6,10 +6,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.MidiIn;
 import com.bitwig.extension.controller.api.MidiOut;
 import com.bitwig.extension.controller.api.Transport;
-import com.dhemery.bitwig.Display;
-import com.dhemery.bitwig.MixerController;
-import com.dhemery.bitwig.NoteInputController;
-import com.dhemery.bitwig.TransportController;
+import com.dhemery.bitwig.*;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeProcessor;
 
@@ -36,7 +33,8 @@ public class ImpulseControl extends ControllerExtension {
 
         new NoteInputController(midiInPort, USB.displayName(), impulse, dispatcher, display);
         new TransportController(transport, impulse, dispatcher);
-        new MixerController(host, impulse, dispatcher, display);
+        new MixerController(host, impulse, dispatcher);
+        new PluginEncoders(host, impulse, dispatcher);
 
         midiInPort.setMidiCallback(dispatcher);
 

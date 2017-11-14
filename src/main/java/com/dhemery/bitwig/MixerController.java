@@ -4,7 +4,9 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
-import com.dhemery.impulse.*;
+import com.dhemery.impulse.Impulse;
+import com.dhemery.impulse.LinearEncoder;
+import com.dhemery.impulse.RotaryEncoder;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
@@ -14,12 +16,9 @@ public class MixerController {
     // TODO: Add extension preference for pan sensitivity?
     // TODO: Shift button temporarily increases sensitivity?
     private static final int PAN_ENCODER_RESOLUTION = 201; // Range from -100% to 100% in 1% increments
-    private final Display display;
 
     // TODO: Plugin mode sends encoder changes to the currently selected device's Remote Controls.
-    public MixerController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher, Display display) {
-        this.display = display;
-        List<MomentaryButton> buttons = impulse.mixerButtons();
+    public MixerController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher) {
         List<RotaryEncoder> encoders = impulse.mixerEncoders();
         List<LinearEncoder> faders = impulse.mixerFaders();
         TrackBank trackBank = host.createTrackBank(encoders.size(), 0, 0);
