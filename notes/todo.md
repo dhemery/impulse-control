@@ -18,4 +18,10 @@
 
 ### Plugin Mode
 - Encoders step the value of the assigned Remote Control?
- 
+
+        CursorRemoteControlsPage cursorRemoteControlsPage = controller.getTracks().getCursorRemoteControlsPage();
+
+        for (int i = 0; i < 8; i++) {
+            cursorRemoteControlsPage.getParameter(i).name().markInterested();
+            cursorRemoteControlsPage.getParameter(i).markInterested();
+        }
