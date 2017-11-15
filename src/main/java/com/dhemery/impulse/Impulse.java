@@ -45,11 +45,11 @@ public class Impulse {
     private static final int RECORD_BUTTON_CC = 0x20;
 
     private final List<ToggleButton> midiButtons = makeControls(MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC, BUTTON_COUNT, ToggleButton::new);
-    private final List<LinearEncoder> midiEncoders = makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, ENCODER_COUNT, LinearEncoder::new);
-    private final List<LinearEncoder> midiFaders = makeControls(MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC, FADER_COUNT, LinearEncoder::new);
+    private final List<Control> midiEncoders = makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, ENCODER_COUNT, Control::new);
+    private final List<Control> midiFaders = makeControls(MIDI_FADER_CHANNEL, MIDI_FADER_BASE_CC, FADER_COUNT, Control::new);
     private final List<MomentaryButton> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, MomentaryButton::new);
-    private final List<RotaryEncoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, RotaryEncoder::new);
-    private final List<LinearEncoder> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, LinearEncoder::new);
+    private final List<StepperEncoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, StepperEncoder::new);
+    private final List<Control> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Control::new);
     private final MomentaryButton playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, MomentaryButton::new);
     private final MomentaryButton stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, MomentaryButton::new);
     private final MomentaryButton rewindButton = makeControl(TRANSPORT_CC_CHANNEL, REWIND_BUTTON_CC, MomentaryButton::new);
@@ -65,11 +65,11 @@ public class Impulse {
         return midiButtons;
     }
 
-    public List<LinearEncoder> midiEncoders() {
+    public List<Control> midiEncoders() {
         return midiEncoders;
     }
 
-    public List<LinearEncoder> midiFaders() {
+    public List<Control> midiFaders() {
         return midiFaders;
     }
 
@@ -77,13 +77,11 @@ public class Impulse {
         return mixerButtons;
     }
 
-    public List<RotaryEncoder> mixerEncoders() {
+    public List<StepperEncoder> mixerEncoders() {
         return mixerEncoders;
     }
 
-    public List<LinearEncoder> mixerFaders() {
-        return mixerFaders;
-    }
+    public List<Control> mixerFaders() { return mixerFaders; }
 
     public MomentaryButton playButton() {
         return playButton;

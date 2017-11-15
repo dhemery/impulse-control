@@ -3,15 +3,15 @@ package com.dhemery.impulse;
 /**
  * A control knob that sends one signal when rotated counterclockwise, another when rotated clockwise.
  */
-public class RotaryEncoder extends Control {
+public class StepperEncoder extends Control {
     private static final int DIRECTION_BASE = 0x40;
 
     /**
-     * Creates a rotary encoder.
+     * Creates a stepper encoder.
      *
      * @param identifier identifies the encoder
      */
-    public RotaryEncoder(ControlIdentifier identifier) {
+    public StepperEncoder(ControlIdentifier identifier) {
         super(identifier);
     }
 

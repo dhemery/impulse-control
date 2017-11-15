@@ -1,27 +1,16 @@
 package com.dhemery.bitwig;
 
-import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
-import com.dhemery.impulse.Impulse;
-import com.dhemery.impulse.LinearEncoder;
-import com.dhemery.impulse.RotaryEncoder;
+import com.dhemery.impulse.Control;
+import com.dhemery.impulse.StepperEncoder;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
 
 public class MixerController {
-    private static final int VOLUME_FADER_RESOLUTION = 128;
-    // TODO: Add extension preference for pan sensitivity?
-    // TODO: Shift button temporarily increases sensitivity?
-    private static final int PAN_ENCODER_RESOLUTION = 201; // Range from -100% to 100% in 1% increments
-
-    // TODO: Plugin mode sends encoder changes to the currently selected device's Remote Controls.
-    public MixerController(ControllerHost host, Impulse impulse, ControlChangeDispatcher dispatcher) {
-        List<RotaryEncoder> encoders = impulse.mixerEncoders();
-        List<LinearEncoder> faders = impulse.mixerFaders();
-        TrackBank trackBank = host.createTrackBank(encoders.size(), 0, 0);
+    public MixerController(TrackBank trackBank, List<Control> faders, List<StepperEncoder> encoders, ControlChangeDispatcher dispatcher) {
         for (int c = 0; c < trackBank.getSizeOfBank(); c++) {
             Track channel = trackBank.getChannel(c);
             connectChannelVolumeFader(dispatcher, channel, faders.get(c));
@@ -29,14 +18,16 @@ public class MixerController {
         }
     }
 
-    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, RotaryEncoder encoder) {
+    private static final int PAN_ENCODER_RESOLUTION = 201; // Range from -100% to 100% in 1% increments
+    private void connectChannelPanEncoder(ControlChangeDispatcher dispatcher, Track channel, StepperEncoder encoder) {
         Parameter channelPan = channel.getPan();
         channelPan.markInterested();
         channelPan.setIndication(true);
         dispatcher.register(encoder, v -> channelPan.inc(encoder.directionOf(v), PAN_ENCODER_RESOLUTION));
     }
 
-    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, LinearEncoder fader) {
+    private static final int VOLUME_FADER_RESOLUTION = 128;
+    private void connectChannelVolumeFader(ControlChangeDispatcher dispatcher, Track channel, Control fader) {
         Parameter channelVolume = channel.getVolume();
         channelVolume.markInterested();
         channelVolume.setIndication(true);
