@@ -6,7 +6,6 @@ import com.bitwig.extension.controller.api.*;
 import com.dhemery.bitwig.*;
 import com.dhemery.impulse.Control;
 import com.dhemery.impulse.Impulse;
-import com.dhemery.impulse.StepperEncoder;
 import com.dhemery.midi.ControlChangeProcessor;
 
 import java.util.List;
@@ -23,6 +22,8 @@ public class ImpulseControl extends ControllerExtension {
             "D?????",   // Channel Aftertouch, any channel.
             "E?????"    // Pitch Bend, any channel.
     };
+    private static final int REMOTE_CONTROL_SCALE = 101;
+    private static final int CHANNEL_PAN_SCALE = 201;
     private final ControlChangeProcessor dispatcher;
     private final Display display;
 
@@ -40,20 +41,36 @@ public class ImpulseControl extends ControllerExtension {
         MidiOut midiOutPort = host.getMidiOutPort(USB.ordinal());
 
         Impulse impulse = new Impulse(midiOutPort);
-        List<StepperEncoder> mixerEncoders = impulse.mixerEncoders();
+        List<Control> midiControls = impulse.midiControls();
         List<Control> mixerFaders = impulse.mixerFaders();
+        List<Control> mixerEncoders = impulse.mixerEncoders();
 
         NoteInput noteInput = midiInPort.createNoteInput(USB.displayName(), NOTE_INPUT_MESSAGE_MASKS);
-        new NoteInputController(noteInput, impulse, dispatcher);
+        midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput, c.identifier.cc)));
 
         Transport transport = host.createTransport();
-        new TransportController(transport, impulse, dispatcher);
+        SettableBooleanValue loopEnabled = transport.isArrangerLoopEnabled();
+        loopEnabled.markInterested();
+        dispatcher.register(impulse.playButton(), new ActIfButtonPressed(transport::play));
+        dispatcher.register(impulse.stopButton(), new ActIfButtonPressed(transport::stop));
+        dispatcher.register(impulse.rewindButton(), new ActIfButtonPressed(transport::rewind));
+        dispatcher.register(impulse.fastForwardButton(), new ActIfButtonPressed(transport::fastForward));
+        dispatcher.register(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
+        dispatcher.register(impulse.recordButton(), new ActIfButtonPressed(transport::record));
 
         TrackBank trackBank = host.createTrackBank(mixerEncoders.size(), 0, 0);
-        new MixerController(trackBank, mixerFaders, mixerEncoders, dispatcher);
+        for (int c = 0; c < trackBank.getSizeOfBank(); c++) {
+            Track channel = trackBank.getChannel(c);
+            Control fader = mixerFaders.get(c);
+            Control encoder = mixerEncoders.get(c);
+            dispatcher.register(fader, new SetParameterValue(channel.getVolume()));
+            dispatcher.register(encoder, new IncrementParameterValue(channel.getPan(), CHANNEL_PAN_SCALE));
+        }
 
         CursorRemoteControlsPage cursorRemoteControlsPage = host.createCursorTrack(0, 0).createCursorDevice().createCursorRemoteControlsPage(mixerEncoders.size());
-        new PluginController(cursorRemoteControlsPage, impulse.mixerEncoders(), dispatcher);
+        for (int p = 0; p < cursorRemoteControlsPage.getParameterCount(); p++) {
+            dispatcher.register(mixerEncoders.get(p), new IncrementParameterValue(cursorRemoteControlsPage.getParameter(p), REMOTE_CONTROL_SCALE));
+        }
 
         midiInPort.setMidiCallback(dispatcher);
 

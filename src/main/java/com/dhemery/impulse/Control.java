@@ -6,7 +6,7 @@ package com.dhemery.impulse;
 public class Control {
     public final ControlIdentifier identifier;
 
-    public  Control(ControlIdentifier identifier) {
+    public Control(ControlIdentifier identifier) {
         this.identifier = identifier;
     }
 }
