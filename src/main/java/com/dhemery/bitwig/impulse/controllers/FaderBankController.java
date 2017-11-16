@@ -29,7 +29,7 @@ public class FaderBankController {
         dispatcher.register(impulse.faderMixerModeButton(), this::enterMixerMode);
         dispatcher.register(impulse.faderMidiModeButton(), this::enterMidiMode);
 
-        setMixerMode(false);
+        enterMixerMode(0, 0);
     }
 
     private void setChannelVolume(int cc, int value) {

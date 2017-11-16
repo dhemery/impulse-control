@@ -12,7 +12,7 @@ public class Bitwig {
     private final ControllerHost host;
     private final String name;
     private final List<Channel> channels;
-    private final List<RemoteControl> remoteControls;
+    private final List<Parameter> remoteControls;
 
     public Bitwig(ControllerHost host, String name, int bankSize) {
         this.host = host;
@@ -29,6 +29,7 @@ public class Bitwig {
 
         remoteControls = IntStream.range(0, bankSize)
                 .mapToObj(remoteControlBank::getParameter)
+                .map(Parameter.class::cast)
                 .collect(toList());
     }
 
@@ -38,7 +39,7 @@ public class Bitwig {
                 .collect(toList());
     }
 
-    public List<RemoteControl> remoteControls() {
+    public List<Parameter> remoteControls() {
         return remoteControls;
     }
 
