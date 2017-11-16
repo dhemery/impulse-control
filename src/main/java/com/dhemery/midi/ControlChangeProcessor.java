@@ -2,19 +2,19 @@ package com.dhemery.midi;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.callback.ShortMidiMessageReceivedCallback;
-import com.dhemery.impulse.controls.Control;
 import com.dhemery.impulse.ControlIdentifier;
+import com.dhemery.impulse.controls.Control;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 
 /**
  * Delivers each control change message to the action registered to the control.
  */
 public class ControlChangeProcessor implements ShortMidiMessageReceivedCallback, ControlChangeDispatcher {
-    private final Map<ControlIdentifier, IntConsumer> actionsByControl = new HashMap<>();
+    private final Map<ControlIdentifier, BiConsumer<Integer, Integer>> actionsByControl = new HashMap<>();
     private final Consumer<ShortMidiMessage> unknownMidiMessageAction;
 
     public ControlChangeProcessor(Consumer<ShortMidiMessage> unknownMidiMessageAction) {
@@ -22,7 +22,7 @@ public class ControlChangeProcessor implements ShortMidiMessageReceivedCallback,
     }
 
     @Override
-    public void register(Control control, IntConsumer action) {
+    public void register(Control control, BiConsumer<Integer, Integer> action) {
         actionsByControl.put(control.identifier, action);
     }
 
@@ -30,7 +30,7 @@ public class ControlChangeProcessor implements ShortMidiMessageReceivedCallback,
     public void midiReceived(ShortMidiMessage message) {
         ControlIdentifier controlIdentifier = controlIdentifierFor(message);
         if (actionsByControl.containsKey(controlIdentifier)) {
-            actionsByControl.get(controlIdentifier).accept(message.getData2());
+            actionsByControl.get(controlIdentifier).accept(message.getData1(), message.getData2());
         } else {
             unknownMidiMessageAction.accept(message);
         }

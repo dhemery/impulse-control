@@ -29,19 +29,19 @@ public class EncoderBankController {
         dispatcher.register(impulse.encoderPluginModeButton(), this::enterPluginMode);
     }
 
-    public void enterMixerMode(int ignores) {
+    public void enterMixerMode(int ignoredCC, int ignoredValue) {
         pluginModeParameters.forEach(p -> p.setIndication(false));
         mixerModeParameters.forEach(p -> p.setIndication(true));
         bitwig.status("Encoders: Mixer Mode");
     }
 
-    public void enterPluginMode(int ignored) {
+    public void enterPluginMode(int ignoredCC, int ignoredValue) {
         mixerModeParameters.forEach(p -> p.setIndication(false));
         pluginModeParameters.forEach(p -> p.setIndication(true));
         bitwig.status("Encoders: Plugin Mode");
     }
 
-    public void enterMidiMode(int ignored) {
+    public void enterMidiMode(int ignoredCC, int ignoredValue) {
         mixerModeParameters.forEach(p -> p.setIndication(false));
         pluginModeParameters.forEach(p -> p.setIndication(false));
         bitwig.status("Encoders: MIDI Mode");

@@ -59,7 +59,7 @@ public class ImpulseControl extends ControllerExtension {
         bitwig = new Bitwig(host, definition.getName(), bankSize);
 
         NoteInput noteInput = midiInPort.createNoteInput(USB.displayName(), NOTE_INPUT_MESSAGE_MASKS);
-        midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput, c.identifier.cc)));
+        midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput)));
 
         Transport transport = host.createTransport();
         SettableBooleanValue loopEnabled = transport.isArrangerLoopEnabled();
