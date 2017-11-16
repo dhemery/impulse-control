@@ -1,35 +1,36 @@
 package com.dhemery.bitwig.impulse.controllers;
 
+import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Parameter;
-import com.dhemery.bitwig.Display;
-import com.dhemery.impulse.controls.Fader;
+import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeProcessor;
 
 import java.util.List;
 
 public class FaderBankController {
-    private final List<Fader> faders;
     private final List<Parameter> mixerModeParameters;
-    private final ControlChangeProcessor dispatcher;
-    private final Display display;
+    private final Bitwig bitwig;
 
-    public FaderBankController(Impulse impulse, List<Parameter> mixerModeParameters, ControlChangeProcessor dispatcher, Display display) {
-        this.faders = impulse.mixerFaders();
-        this.mixerModeParameters = mixerModeParameters;
-        this.dispatcher = dispatcher;
-        this.display = display;
+    public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeProcessor dispatcher) {
+        this.bitwig = bitwig;
+        mixerModeParameters = bitwig.channelParameters(Channel::getVolume);
         dispatcher.register(impulse.faderMixerModeButton(), this::enterMixerMode);
         dispatcher.register(impulse.faderMidiModeButton(), this::enterMidiMode);
+        setMixerMode(false);
     }
 
-    public void enterMixerMode(int value) {
-        display.status("Faders: Mixer Mode");
-        mixerModeParameters.forEach(p -> p.setIndication(true));
+    private void enterMixerMode(int ignored) {
+        setMixerMode(true);
+        bitwig.status("Faders: Mixer Mode");
     }
 
-    public void enterMidiMode(int value) {
-        display.status("Faders: Midi Mode");
-        mixerModeParameters.forEach(p -> p.setIndication(false));
+    private void enterMidiMode(int ignored) {
+        setMixerMode(false);
+        bitwig.status("Faders: MIDI Mode");
+    }
+
+    private void setMixerMode(boolean isMixerMode) {
+        mixerModeParameters.forEach(p -> p.setIndication(isMixerMode));
     }
 }

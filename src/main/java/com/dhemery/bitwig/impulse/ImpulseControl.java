@@ -35,11 +35,12 @@ public class ImpulseControl extends ControllerExtension {
     private static final double VOLUME_PARAMETER_RANGE = 1.0;
 
     private final ControlChangeProcessor dispatcher;
-    private final Display display;
+    private final ImpulseControlDefinition definition;
+    private Bitwig bitwig;
 
     ImpulseControl(ImpulseControlDefinition definition, ControllerHost host) {
         super(definition, host);
-        display = new Display(host, definition.getName());
+        this.definition = definition;
         dispatcher = new ControlChangeProcessor(this::warnUnhandled);
     }
 
@@ -52,14 +53,10 @@ public class ImpulseControl extends ControllerExtension {
 
         Impulse impulse = new Impulse(midiOutPort);
         List<Control> midiControls = impulse.midiControls();
-        List<Fader> mixerFaders = impulse.mixerFaders();
         List<Encoder> mixerEncoders = impulse.mixerEncoders();
 
         int bankSize = mixerEncoders.size();
-        TrackBank trackBank = host.createTrackBank(bankSize, 0, 0);
-        CursorRemoteControlsPage remoteControlBank = host.createCursorTrack(0, 0)
-                .createCursorDevice()
-                .createCursorRemoteControlsPage(bankSize);
+        bitwig = new Bitwig(host, definition.getName(), bankSize);
 
         NoteInput noteInput = midiInPort.createNoteInput(USB.displayName(), NOTE_INPUT_MESSAGE_MASKS);
         midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput, c.identifier.cc)));
@@ -74,27 +71,17 @@ public class ImpulseControl extends ControllerExtension {
         dispatcher.register(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
         dispatcher.register(impulse.recordButton(), new ActIfButtonPressed(transport::record));
 
-        List<Track> tracks = IntStream.range(0, trackBank.getSizeOfBank())
-                .mapToObj(trackBank::getChannel)
-                .collect(toList());
-        List<Parameter> panParameters = tracks.stream().map(Channel::getPan).collect(toList());
-        List<Parameter> volumeParameters = tracks.stream().map(Channel::getVolume).collect(toList());
-
-        List<Parameter> remoteControlParameters = IntStream.range(0, trackBank.getSizeOfBank())
-                .mapToObj(remoteControlBank::getParameter)
-                .collect(toList());
-
-        new EncoderBankController(impulse, panParameters, remoteControlParameters, dispatcher, display);
-        new FaderBankController(impulse, volumeParameters, dispatcher, display);
+        new EncoderBankController(impulse, bitwig, dispatcher);
+        new FaderBankController(impulse, bitwig, dispatcher);
 
         midiInPort.setMidiCallback(dispatcher);
 
-        display.status("initialized");
+        bitwig.status("initialized");
     }
 
     @Override
     public void exit() {
-        display.status("exited");
+        bitwig.status("exited");
     }
 
     @Override
@@ -103,6 +90,6 @@ public class ImpulseControl extends ControllerExtension {
 
     private void warnUnhandled(ShortMidiMessage message) {
         String warning = String.format("Unhandled MIDI %X%X[%02X,%02X]", message.getStatusByte() >> 4, message.getChannel(), message.getData1(), message.getData2());
-        display.debug(warning);
+        bitwig.debug(warning);
     }
 }
