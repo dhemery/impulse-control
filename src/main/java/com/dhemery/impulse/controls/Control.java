@@ -11,4 +11,9 @@ public class Control {
     public Control(ControlIdentifier identifier) {
         this.identifier = identifier;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s", getClass().getSimpleName(), identifier);
+    }
 }

@@ -27,4 +27,9 @@ public class ControlIdentifier {
     public int hashCode() {
         return 31 * channel + cc;
     }
+
+    @Override
+    public String toString() {
+        return String.format("ch %2x cc %2x", channel, cc);
+    }
 }

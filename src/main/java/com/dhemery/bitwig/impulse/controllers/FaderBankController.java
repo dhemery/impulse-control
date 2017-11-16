@@ -2,49 +2,41 @@ package com.dhemery.bitwig.impulse.controllers;
 
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Parameter;
+import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.impulse.controls.Fader;
 import com.dhemery.midi.ControlChangeDispatcher;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 
 public class FaderBankController {
-    private final Bitwig bitwig;
-    private final Map<Fader, Parameter> parametersByCC = new HashMap<>();
+    private ControlMode<Fader> currentMode;
 
     public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
-        this.bitwig = bitwig;
         List<Parameter> channelVolumeParameters = bitwig.channelParameters(Channel::getVolume);
         List<Fader> mixerFaders = impulse.mixerFaders();
-        IntStream.range(0, channelVolumeParameters.size())
-                .forEach(i -> parametersByCC.put(mixerFaders.get(i), channelVolumeParameters.get(i)));
-        mixerFaders.forEach(f -> dispatcher.onValue(f, this::setChannelVolume));
+        ControlMode<Fader> mixerMode = new ControlMode<>("Fader Mixer", bitwig, mixerFaders, channelVolumeParameters, SettableRangedValue::set, 1);
+        ControlMode<Fader> midiMode = new ControlMode<>("Fader MIDI", bitwig, Collections.emptyList(), Collections.emptyList(), SettableRangedValue::set, 1);
 
-        dispatcher.onTouch(impulse.faderMixerModeButton(), this::enterMixerMode);
-        dispatcher.onTouch(impulse.faderMidiModeButton(), this::enterMidiMode);
+        mixerFaders.forEach(f -> dispatcher.onValue(f, this::forwardToMode));
 
-        enterMidiMode();
+        dispatcher.onTouch(impulse.faderMixerModeButton(), () -> enter(mixerMode));
+        dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
+
+        currentMode = midiMode;
+        currentMode.enter();
     }
 
-    private void setChannelVolume(Fader fader, int value) {
-        parametersByCC.get(fader).set(fader.normalize(value));
+    private void forwardToMode(Fader fader, int value) {
+        currentMode.accept(fader, value);
     }
 
-    private void enterMixerMode() {
-        setMixerMode(true);
-        bitwig.status("Faders: Mixer Mode");
+    private void enter(ControlMode<Fader> mode) {
+        currentMode.exit();
+        currentMode = mode;
+        currentMode.enter();
     }
 
-    private void enterMidiMode() {
-        setMixerMode(false);
-        bitwig.status("Faders: MIDI Mode");
-    }
-
-    private void setMixerMode(boolean isMixerMode) {
-        parametersByCC.values().forEach(p -> p.setIndication(isMixerMode));
-    }
 }
