@@ -15,13 +15,11 @@ import java.util.stream.IntStream;
 
 public class ControlMode<T extends Normalizing> {
     private final String name;
-    private final BiConsumer<Parameter, Double> setter;
     private final double scale;
     private final Map<Normalizing, Parameter> parametersByControl = new HashMap<>();
 
-    public ControlMode(String name, List<T> controls, List<Parameter> parameters, BiConsumer<Parameter,Double> setter, double scale) {
+    public ControlMode(String name, List<T> controls, List<Parameter> parameters, double scale) {
         this.name = name;
-        this.setter = setter;
         this.scale = scale;
         IntStream.range(0, parameters.size())
                 .forEach(i -> parametersByControl.put(controls.get(i), parameters.get(i)));
@@ -35,7 +33,7 @@ public class ControlMode<T extends Normalizing> {
         setIndicators(false);
     }
 
-    public void accept(T control, int value) {
+    public void apply(T control, BiConsumer<Parameter,Double> setter, int value) {
         setter.accept(parametersByControl.get(control), control.normalize(value) * scale);
     }
 
