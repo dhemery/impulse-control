@@ -19,7 +19,7 @@ public class EncoderBankController {
     private final Map<Encoder, Parameter> remoteControlsByEncoder = new HashMap<>();
     private final Bitwig bitwig;
     private Map<Encoder, Parameter> activeParametersByEncoder = NO_ENCODER_MAPPINGS;
-    private int activeParameterScale;
+    private double activeParameterScale;
 
     public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         this.bitwig = bitwig;
@@ -42,13 +42,13 @@ public class EncoderBankController {
 
     public void enterMixerMode() {
         activate(panParametersByEncoder);
-        activeParameterScale = 201;
+        activeParameterScale = 1.0 / 200.0;
         bitwig.status("Encoders: Mixer Mode");
     }
 
     public void enterPluginMode() {
         activate(remoteControlsByEncoder);
-        activeParameterScale = 101;
+        activeParameterScale = 1.0 / 100.0;
         bitwig.status("Encoders: Plugin Mode");
     }
 
@@ -64,6 +64,6 @@ public class EncoderBankController {
     }
 
     private void adjustParameter(Encoder encoder, int value) {
-        activeParametersByEncoder.get(encoder).inc(value - 0x40, activeParameterScale);
+        activeParametersByEncoder.get(encoder).inc(encoder.normalize(value) * activeParameterScale);
     }
 }
