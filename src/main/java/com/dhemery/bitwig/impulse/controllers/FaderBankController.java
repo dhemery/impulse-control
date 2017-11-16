@@ -31,7 +31,7 @@ public class FaderBankController {
     }
 
     private void setChannelVolume(Fader fader, int value) {
-        parametersByCC.get(fader).set(value, 127);
+        parametersByCC.get(fader).set(fader.normalize(value));
     }
 
     private void enterMixerMode() {
