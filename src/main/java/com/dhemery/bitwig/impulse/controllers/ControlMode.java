@@ -15,14 +15,12 @@ import java.util.stream.IntStream;
 
 public class ControlMode<T extends Normalizing> {
     private final String name;
-    private final Bitwig bitwig;
     private final BiConsumer<Parameter, Double> setter;
     private final double scale;
     private final Map<Normalizing, Parameter> parametersByControl = new HashMap<>();
 
-    public ControlMode(String name, Bitwig bitwig, List<T> controls, List<Parameter> parameters, BiConsumer<Parameter,Double> setter, double scale) {
+    public ControlMode(String name, List<T> controls, List<Parameter> parameters, BiConsumer<Parameter,Double> setter, double scale) {
         this.name = name;
-        this.bitwig = bitwig;
         this.setter = setter;
         this.scale = scale;
         IntStream.range(0, parameters.size())
@@ -31,18 +29,22 @@ public class ControlMode<T extends Normalizing> {
 
     public void enter() {
         setIndicators(true);
-        bitwig.status(String.format("Entering %s mode", name));
     }
 
     public void exit() {
         setIndicators(false);
     }
 
+    public void accept(T control, int value) {
+        setter.accept(parametersByControl.get(control), control.normalize(value) * scale);
+    }
+
     private void setIndicators(boolean isActive) {
         parametersByControl.values().forEach(p -> p.setIndication(isActive));
     }
 
-    public void accept(T control, int value) {
-        setter.accept(parametersByControl.get(control), control.normalize(value) * scale);
+    @Override
+    public String toString() {
+        return name;
     }
 }
