@@ -2,11 +2,12 @@ package com.dhemery.bitwig.commands;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.NoteInput;
+import com.dhemery.impulse.controls.Control;
 
 import java.util.function.BiConsumer;
-import java.util.function.IntConsumer;
+import java.util.function.Consumer;
 
-public class ForwardToNoteInput implements BiConsumer<Integer,Integer> {
+public class ForwardToNoteInput implements Consumer<ShortMidiMessage> {
     private final NoteInput noteInput;
 
     public ForwardToNoteInput(NoteInput noteInput) {
@@ -14,7 +15,7 @@ public class ForwardToNoteInput implements BiConsumer<Integer,Integer> {
     }
 
     @Override
-    public void accept(Integer cc, Integer value) {
-        noteInput.sendRawMidiEvent(ShortMidiMessage.CONTROL_CHANGE, cc, value);
+    public void accept(ShortMidiMessage message) {
+        noteInput.sendRawMidiEvent(message.getStatusByte(), message.getData1(), message.getData2());
     }
 }

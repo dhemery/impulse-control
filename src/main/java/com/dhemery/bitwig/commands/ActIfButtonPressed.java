@@ -1,8 +1,8 @@
 package com.dhemery.bitwig.commands;
 
-import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 
-public class ActIfButtonPressed implements BiConsumer<Integer, Integer> {
+public class ActIfButtonPressed implements IntConsumer {
     private final Runnable action;
 
     public ActIfButtonPressed(Runnable action) {
@@ -10,7 +10,7 @@ public class ActIfButtonPressed implements BiConsumer<Integer, Integer> {
     }
 
     @Override
-    public void accept(Integer ignoredCC, Integer value) {
+    public void accept(int value) {
         if (value > 0) action.run();
     }
 }

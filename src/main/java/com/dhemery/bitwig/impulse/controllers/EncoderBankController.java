@@ -5,65 +5,65 @@ import com.bitwig.extension.controller.api.Parameter;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.impulse.controls.Encoder;
-import com.dhemery.midi.ControlChangeProcessor;
+import com.dhemery.midi.ControlChangeDispatcher;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 public class EncoderBankController {
-    private final List<Parameter> channelPanParameters;
-    private final List<Parameter> remoteControls;
+    private static final Map<Encoder, Parameter> NO_ENCODER_MAPPINGS = Collections.emptyMap();
+    private final Map<Encoder, Parameter> panParametersByEncoder = new HashMap<>();
+    private final Map<Encoder, Parameter> remoteControlsByEncoder = new HashMap<>();
     private final Bitwig bitwig;
-    private final List<Encoder> mixerEncoders;
-    private final Map<Integer, Parameter> parametersByCC = new HashMap<>();
-    private final Map<Integer, Parameter> remoteControlsByCC = new HashMap<>();
-    private List<Parameter> activeParametersByCC;
+    private Map<Encoder, Parameter> activeParametersByEncoder = NO_ENCODER_MAPPINGS;
     private int activeParameterScale;
 
-    public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeProcessor dispatcher) {
+    public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         this.bitwig = bitwig;
-        channelPanParameters = bitwig.channelParameters(Channel::getPan);
-        remoteControls = bitwig.remoteControls();
+        List<Parameter> channelPanParameters = bitwig.channelParameters(Channel::getPan);
+        List<Parameter> remoteControls = bitwig.remoteControls();
 
-        mixerEncoders = impulse.mixerEncoders();
+        List<Encoder> mixerEncoders = impulse.mixerEncoders();
         IntStream.range(0, channelPanParameters.size())
-                .forEach(i -> parametersByCC.put(mixerEncoders.get(i).identifier.cc, channelPanParameters.get(i)));
+                .forEach(i -> panParametersByEncoder.put(mixerEncoders.get(i), channelPanParameters.get(i)));
         IntStream.range(0, remoteControls.size())
-                .forEach(i -> remoteControlsByCC.put(mixerEncoders.get(i).identifier.cc, remoteControls.get(i)));
-        mixerEncoders.forEach(f -> dispatcher.register(f, this::handleEncoderChange));
+                .forEach(i -> remoteControlsByEncoder.put(mixerEncoders.get(i), remoteControls.get(i)));
+        mixerEncoders.forEach(f -> dispatcher.onValue(f, this::adjustParameter));
 
-        dispatcher.register(impulse.encoderMidiModeButton(), this::enterMidiMode);
-        dispatcher.register(impulse.encoderMixerModeButton(), this::enterMixerMode);
-        dispatcher.register(impulse.encoderPluginModeButton(), this::enterPluginMode);
+        dispatcher.onTouch(impulse.encoderMidiModeButton(), this::enterMidiMode);
+        dispatcher.onTouch(impulse.encoderMixerModeButton(), this::enterMixerMode);
+        dispatcher.onTouch(impulse.encoderPluginModeButton(), this::enterPluginMode);
 
-        enterMixerMode(0, 0);
+        enterMidiMode();
     }
 
-    public void enterMixerMode(int ignoredCC, int ignoredValue) {
-        remoteControls.forEach(p -> p.setIndication(false));
-        channelPanParameters.forEach(p -> p.setIndication(true));
-        activeParametersByCC = channelPanParameters;
+    public void enterMixerMode() {
+        activate(panParametersByEncoder);
         activeParameterScale = 201;
         bitwig.status("Encoders: Mixer Mode");
     }
 
-    public void enterPluginMode(int ignoredCC, int ignoredValue) {
-        channelPanParameters.forEach(p -> p.setIndication(false));
-        remoteControls.forEach(p -> p.setIndication(true));
-        activeParametersByCC = remoteControls;
+    public void enterPluginMode() {
+        activate(remoteControlsByEncoder);
         activeParameterScale = 101;
         bitwig.status("Encoders: Plugin Mode");
     }
 
-    public void enterMidiMode(int ignoredCC, int ignoredValue) {
-        channelPanParameters.forEach(p -> p.setIndication(false));
-        remoteControls.forEach(p -> p.setIndication(false));
+    public void enterMidiMode() {
+        activate(NO_ENCODER_MAPPINGS);
         bitwig.status("Encoders: MIDI Mode");
     }
 
-    private void handleEncoderChange(int cc, int value) {
-        activeParametersByCC.get(cc).inc(value - 0x40, activeParameterScale);
+    private void activate(Map<Encoder, Parameter> arrivingParametersByCC) {
+        activeParametersByEncoder.values().forEach(p -> p.setIndication(false));
+        activeParametersByEncoder = arrivingParametersByCC;
+        activeParametersByEncoder.values().forEach(p -> p.setIndication(true));
+    }
+
+    private void adjustParameter(Encoder encoder, int value) {
+        activeParametersByEncoder.get(encoder).inc(value - 0x40, activeParameterScale);
     }
 }

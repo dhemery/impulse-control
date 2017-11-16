@@ -10,15 +10,12 @@ import com.dhemery.bitwig.impulse.controllers.EncoderBankController;
 import com.dhemery.bitwig.impulse.controllers.FaderBankController;
 import com.dhemery.impulse.controls.Control;
 import com.dhemery.impulse.controls.Encoder;
-import com.dhemery.impulse.controls.Fader;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeProcessor;
 
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.dhemery.impulse.Port.USB;
-import static java.util.stream.Collectors.toList;
 
 public class ImpulseControl extends ControllerExtension {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -59,17 +56,17 @@ public class ImpulseControl extends ControllerExtension {
         bitwig = new Bitwig(host, definition.getName(), bankSize);
 
         NoteInput noteInput = midiInPort.createNoteInput(USB.displayName(), NOTE_INPUT_MESSAGE_MASKS);
-        midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput)));
+        midiControls.forEach(c -> dispatcher.onMessage(c, new ForwardToNoteInput(noteInput)));
 
         Transport transport = host.createTransport();
         SettableBooleanValue loopEnabled = transport.isArrangerLoopEnabled();
         loopEnabled.markInterested();
-        dispatcher.register(impulse.playButton(), new ActIfButtonPressed(transport::play));
-        dispatcher.register(impulse.stopButton(), new ActIfButtonPressed(transport::stop));
-        dispatcher.register(impulse.rewindButton(), new ActIfButtonPressed(transport::rewind));
-        dispatcher.register(impulse.fastForwardButton(), new ActIfButtonPressed(transport::fastForward));
-        dispatcher.register(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
-        dispatcher.register(impulse.recordButton(), new ActIfButtonPressed(transport::record));
+        dispatcher.onValue(impulse.playButton(), new ActIfButtonPressed(transport::play));
+        dispatcher.onValue(impulse.stopButton(), new ActIfButtonPressed(transport::stop));
+        dispatcher.onValue(impulse.rewindButton(), new ActIfButtonPressed(transport::rewind));
+        dispatcher.onValue(impulse.fastForwardButton(), new ActIfButtonPressed(transport::fastForward));
+        dispatcher.onValue(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
+        dispatcher.onValue(impulse.recordButton(), new ActIfButtonPressed(transport::record));
 
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
