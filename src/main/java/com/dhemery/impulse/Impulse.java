@@ -47,8 +47,8 @@ public class Impulse {
 
     private final List<Control> midiControls = new ArrayList<>();
     private final List<Control> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, Control::new);
-    private final List<Control> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Control::new);
-    private final List<Control> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Control::new);
+    private final List<Stepper> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Stepper::new);
+    private final List<Fader> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Fader::new);
     private final Control playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, Control::new);
     private final Control stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, Control::new);
     private final Control rewindButton = makeControl(TRANSPORT_CC_CHANNEL, REWIND_BUTTON_CC, Control::new);
@@ -71,11 +71,11 @@ public class Impulse {
         return mixerButtons;
     }
 
-    public List<Control> mixerEncoders() {
+    public List<Stepper> mixerEncoders() {
         return mixerEncoders;
     }
 
-    public List<Control> mixerFaders() {
+    public List<Fader> mixerFaders() {
         return mixerFaders;
     }
 
