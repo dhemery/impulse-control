@@ -1,4 +1,4 @@
-package com.dhemery.bitwig;
+package com.dhemery.bitwig.commands;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.NoteInput;

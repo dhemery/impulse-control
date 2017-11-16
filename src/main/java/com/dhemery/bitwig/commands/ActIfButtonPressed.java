@@ -1,4 +1,4 @@
-package com.dhemery.bitwig;
+package com.dhemery.bitwig.commands;
 
 import java.util.function.IntConsumer;
 

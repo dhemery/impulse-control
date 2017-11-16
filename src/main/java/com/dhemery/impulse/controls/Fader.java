@@ -1,7 +1,9 @@
-package com.dhemery.impulse;
+package com.dhemery.impulse.controls;
+
+import com.dhemery.impulse.ControlIdentifier;
 
 public class Fader extends Control implements Normalizing {
-    private static final int FADER_CONTROL_MAX_VALUE = 127;
+    private static final int FADER_MAX_VALUE = 127;
 
     public Fader(ControlIdentifier identifier) {
         super(identifier);
@@ -9,6 +11,6 @@ public class Fader extends Control implements Normalizing {
 
     @Override
     public double normalize(int value) {
-        return ((double) value) / FADER_CONTROL_MAX_VALUE;
+        return ((double) value) / FADER_MAX_VALUE;
     }
 }

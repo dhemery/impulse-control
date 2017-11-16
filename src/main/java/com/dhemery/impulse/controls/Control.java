@@ -1,4 +1,6 @@
-package com.dhemery.impulse;
+package com.dhemery.impulse.controls;
+
+import com.dhemery.impulse.ControlIdentifier;
 
 /**
  * Represents a control on a Novation Impulse.

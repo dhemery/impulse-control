@@ -2,7 +2,7 @@ package com.dhemery.midi;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.callback.ShortMidiMessageReceivedCallback;
-import com.dhemery.impulse.Control;
+import com.dhemery.impulse.controls.Control;
 import com.dhemery.impulse.ControlIdentifier;
 
 import java.util.HashMap;

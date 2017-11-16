@@ -4,15 +4,21 @@ import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.*;
 import com.dhemery.bitwig.*;
-import com.dhemery.impulse.Control;
-import com.dhemery.impulse.Stepper;
-import com.dhemery.impulse.Fader;
+import com.dhemery.bitwig.commands.ActIfButtonPressed;
+import com.dhemery.bitwig.commands.ForwardToNoteInput;
+import com.dhemery.bitwig.impulse.controllers.EncoderBankController;
+import com.dhemery.bitwig.impulse.controllers.FaderBankController;
+import com.dhemery.impulse.controls.Control;
+import com.dhemery.impulse.controls.Encoder;
+import com.dhemery.impulse.controls.Fader;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeProcessor;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.dhemery.impulse.Port.USB;
+import static java.util.stream.Collectors.toList;
 
 public class ImpulseControl extends ControllerExtension {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -47,7 +53,13 @@ public class ImpulseControl extends ControllerExtension {
         Impulse impulse = new Impulse(midiOutPort);
         List<Control> midiControls = impulse.midiControls();
         List<Fader> mixerFaders = impulse.mixerFaders();
-        List<Stepper> mixerEncoders = impulse.mixerEncoders();
+        List<Encoder> mixerEncoders = impulse.mixerEncoders();
+
+        int bankSize = mixerEncoders.size();
+        TrackBank trackBank = host.createTrackBank(bankSize, 0, 0);
+        CursorRemoteControlsPage remoteControlBank = host.createCursorTrack(0, 0)
+                .createCursorDevice()
+                .createCursorRemoteControlsPage(bankSize);
 
         NoteInput noteInput = midiInPort.createNoteInput(USB.displayName(), NOTE_INPUT_MESSAGE_MASKS);
         midiControls.forEach(c -> dispatcher.register(c, new ForwardToNoteInput(noteInput, c.identifier.cc)));
@@ -62,23 +74,18 @@ public class ImpulseControl extends ControllerExtension {
         dispatcher.register(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
         dispatcher.register(impulse.recordButton(), new ActIfButtonPressed(transport::record));
 
-        TrackBank trackBank = host.createTrackBank(mixerEncoders.size(), 0, 0);
-        for (int c = 0; c < trackBank.getSizeOfBank(); c++) {
-            Track channel = trackBank.getChannel(c);
-            Fader fader = mixerFaders.get(c);
-            Stepper encoder = mixerEncoders.get(c);
-            Parameter volume = channel.getVolume();
-            Parameter pan = channel.getPan();
-            dispatcher.register(fader, new ParameterController(volume, fader::normalize, volume::set, VOLUME_PARAMETER_RANGE));
-            dispatcher.register(encoder, new ParameterController(pan, encoder::normalize, pan::inc, PAN_PARAMETER_INCREMENT));
-        }
+        List<Track> tracks = IntStream.range(0, trackBank.getSizeOfBank())
+                .mapToObj(trackBank::getChannel)
+                .collect(toList());
+        List<Parameter> panParameters = tracks.stream().map(Channel::getPan).collect(toList());
+        List<Parameter> volumeParameters = tracks.stream().map(Channel::getVolume).collect(toList());
 
-        CursorRemoteControlsPage cursorRemoteControlsPage = host.createCursorTrack(0, 0).createCursorDevice().createCursorRemoteControlsPage(mixerEncoders.size());
-        for (int p = 0; p < cursorRemoteControlsPage.getParameterCount(); p++) {
-            Stepper encoder = mixerEncoders.get(p);
-            RemoteControl parameter = cursorRemoteControlsPage.getParameter(p);
-            dispatcher.register(encoder, new ParameterController(parameter, encoder::normalize, parameter::inc, REMOTE_CONTROL_PARAMETER_INCREMENT));
-        }
+        List<Parameter> remoteControlParameters = IntStream.range(0, trackBank.getSizeOfBank())
+                .mapToObj(remoteControlBank::getParameter)
+                .collect(toList());
+
+        new EncoderBankController(impulse, panParameters, remoteControlParameters, dispatcher, display);
+        new FaderBankController(impulse, volumeParameters, dispatcher, display);
 
         midiInPort.setMidiCallback(dispatcher);
 

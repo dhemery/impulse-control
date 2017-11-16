@@ -1,6 +1,6 @@
 package com.dhemery.midi;
 
-import com.dhemery.impulse.Control;
+import com.dhemery.impulse.controls.Control;
 
 import java.util.function.IntConsumer;
 

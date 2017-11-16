@@ -1,6 +1,9 @@
 package com.dhemery.impulse;
 
 import com.bitwig.extension.controller.api.MidiOut;
+import com.dhemery.impulse.controls.Control;
+import com.dhemery.impulse.controls.Encoder;
+import com.dhemery.impulse.controls.Fader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +47,17 @@ public class Impulse {
     private static final int STOP_BUTTON_CC = 0x1D;
     private static final int LOOP_BUTTON_CC = 0x1F;
     private static final int RECORD_BUTTON_CC = 0x20;
+    private static final int FADER_MODE_CC_CHANNEL = 0;
+    private static final int FADER_MIXER_MODE_BUTTON_CC = 0x22;
+    private static final int FADER_MIDI_MODE_BUTTON_CC = 0x21;
+    private static final int ENCODER_MODE_CC_CHANNEL = 1;
+    private static final int ENCODER_MIDI_MODE_BUTTON_CC = 0x08;
+    private static final int ENCODER_MIXER_MODE_BUTTON_CC = 0x09;
+    private static final int ENCODER_PLUGIN_MODE_BUTTON_CC = 0x0A;
 
     private final List<Control> midiControls = new ArrayList<>();
     private final List<Control> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, Control::new);
-    private final List<Stepper> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Stepper::new);
+    private final List<Encoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Encoder::new);
     private final List<Fader> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Fader::new);
     private final Control playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, Control::new);
     private final Control stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, Control::new);
@@ -55,6 +65,11 @@ public class Impulse {
     private final Control fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, Control::new);
     private final Control recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, Control::new);
     private final Control loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, Control::new);
+    private final Control faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Control::new);
+    private final Control faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Control::new);
+    private final Control encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Control::new);
+    private final Control encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Control::new);
+    private final Control encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Control::new);
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
@@ -71,7 +86,7 @@ public class Impulse {
         return mixerButtons;
     }
 
-    public List<Stepper> mixerEncoders() {
+    public List<Encoder> mixerEncoders() {
         return mixerEncoders;
     }
 
@@ -116,5 +131,24 @@ public class Impulse {
         return IntStream.range(0, count)
                 .mapToObj(index -> makeControl(channel, baseCC + index, controlBuilder))
                 .collect(Collectors.toList());
+    }
+
+    public Control faderMixerModeButton() {
+        return faderMixerModeButton;
+    }
+
+    public Control faderMidiModeButton() {
+        return faderMidiModeButton;
+    }
+
+    public Control encoderMidiModeButton() {
+        return encoderMidiModeButton;
+    }
+
+    public Control encoderMixerModeButton() {
+        return encoderMixerModeButton;
+    }
+    public Control encoderPluginModeButton() {
+        return encoderPluginModeButton;
     }
 }

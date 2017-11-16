@@ -1,4 +1,4 @@
-package com.dhemery.bitwig;
+package com.dhemery.bitwig.commands;
 
 import com.bitwig.extension.controller.api.Parameter;
 
@@ -7,12 +7,12 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntToDoubleFunction;
 
-public class ParameterController implements IntConsumer {
+public class AdjustParameter implements IntConsumer {
     private final IntToDoubleFunction normalizer;
     private final Consumer<Double> action;
     private final double scale;
 
-    public ParameterController(Parameter parameter, IntToDoubleFunction normalizer, Consumer<Double> action, double scale) {
+    public AdjustParameter(Parameter parameter, IntToDoubleFunction normalizer, Consumer<Double> action, double scale) {
         this.normalizer = normalizer;
         this.action = action;
         this.scale = scale;
