@@ -71,8 +71,8 @@ public class ImpulseControl extends ControllerExtension {
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
 
-        impulse.encoderMidiModeButton().enable(midiOutPort);
-        impulse.faderMidiModeButton().enable(midiOutPort);
+        impulse.encoderMidiModeButton().select(midiOutPort);
+        impulse.faderMidiModeButton().select(midiOutPort);
 
         midiInPort.setMidiCallback(dispatcher);
 

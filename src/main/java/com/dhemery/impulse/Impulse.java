@@ -4,7 +4,7 @@ import com.bitwig.extension.controller.api.MidiOut;
 import com.dhemery.impulse.controls.Control;
 import com.dhemery.impulse.controls.Encoder;
 import com.dhemery.impulse.controls.Fader;
-import com.dhemery.impulse.controls.Toggle;
+import com.dhemery.impulse.controls.Selector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,11 +66,11 @@ public class Impulse {
     private final Control fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, Control::new);
     private final Control recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, Control::new);
     private final Control loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, Control::new);
-    private final Toggle faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Toggle::new);
-    private final Toggle faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Toggle::new);
-    private final Toggle encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Toggle::new);
-    private final Toggle encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Toggle::new);
-    private final Toggle encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Toggle::new);
+    private final Selector faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Selector::new);
+    private final Selector faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Selector::new);
+    private final Selector encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Selector::new);
+    private final Selector encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Selector::new);
+    private final Selector encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Selector::new);
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
@@ -119,23 +119,23 @@ public class Impulse {
         return loopButton;
     }
 
-    public Toggle faderMixerModeButton() {
+    public Selector faderMixerModeButton() {
         return faderMixerModeButton;
     }
 
-    public Toggle faderMidiModeButton() {
+    public Selector faderMidiModeButton() {
         return faderMidiModeButton;
     }
 
-    public Toggle encoderMidiModeButton() {
+    public Selector encoderMidiModeButton() {
         return encoderMidiModeButton;
     }
 
-    public Toggle encoderMixerModeButton() {
+    public Selector encoderMixerModeButton() {
         return encoderMixerModeButton;
     }
 
-    public Toggle encoderPluginModeButton() {
+    public Selector encoderPluginModeButton() {
         return encoderPluginModeButton;
     }
 
