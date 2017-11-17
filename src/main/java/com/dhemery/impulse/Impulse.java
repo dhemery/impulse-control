@@ -4,6 +4,7 @@ import com.bitwig.extension.controller.api.MidiOut;
 import com.dhemery.impulse.controls.Control;
 import com.dhemery.impulse.controls.Encoder;
 import com.dhemery.impulse.controls.Fader;
+import com.dhemery.impulse.controls.Toggle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +66,11 @@ public class Impulse {
     private final Control fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, Control::new);
     private final Control recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, Control::new);
     private final Control loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, Control::new);
-    private final Control faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Control::new);
-    private final Control faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Control::new);
-    private final Control encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Control::new);
-    private final Control encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Control::new);
-    private final Control encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Control::new);
+    private final Toggle faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Toggle::new);
+    private final Toggle faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Toggle::new);
+    private final Toggle encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Toggle::new);
+    private final Toggle encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Toggle::new);
+    private final Toggle encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Toggle::new);
 
     public Impulse(MidiOut port) {
         port.sendSysex(CONNECT_TO_COMPUTER);
@@ -118,10 +119,25 @@ public class Impulse {
         return loopButton;
     }
 
-    private static String sysexMessage(String content) {
-        return String.format(MESSAGE_FORMAT, content);
+    public Toggle faderMixerModeButton() {
+        return faderMixerModeButton;
     }
 
+    public Toggle faderMidiModeButton() {
+        return faderMidiModeButton;
+    }
+
+    public Toggle encoderMidiModeButton() {
+        return encoderMidiModeButton;
+    }
+
+    public Toggle encoderMixerModeButton() {
+        return encoderMixerModeButton;
+    }
+
+    public Toggle encoderPluginModeButton() {
+        return encoderPluginModeButton;
+    }
 
     private static <T> T makeControl(int channel, int cc, Function<ControlIdentifier, T> controlBuilder) {
         return controlBuilder.apply(new ControlIdentifier(channel, cc));
@@ -133,22 +149,7 @@ public class Impulse {
                 .collect(Collectors.toList());
     }
 
-    public Control faderMixerModeButton() {
-        return faderMixerModeButton;
-    }
-
-    public Control faderMidiModeButton() {
-        return faderMidiModeButton;
-    }
-
-    public Control encoderMidiModeButton() {
-        return encoderMidiModeButton;
-    }
-
-    public Control encoderMixerModeButton() {
-        return encoderMixerModeButton;
-    }
-    public Control encoderPluginModeButton() {
-        return encoderPluginModeButton;
+    private static String sysexMessage(String content) {
+        return String.format(MESSAGE_FORMAT, content);
     }
 }
