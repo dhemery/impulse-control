@@ -35,11 +35,10 @@ repositories {
 }
 
 dependencies {
-    compile "com.bitwig:extension-api:3+"
+    compile "com.bitwig:extension-api:5+"
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "4.3"
 }
 
 def bitwigExtensionsDirectory = System.getProperty("user.home") + '/Documents/Bitwig Studio/Extensions'
