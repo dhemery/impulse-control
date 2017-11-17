@@ -15,6 +15,7 @@ public class FaderBankController extends ControlBankController<Fader> {
         super("Fader", bitwig, dispatcher, impulse.faderMidiModeButton(), impulse.mixerFaders(), SettableRangedValue::set);
 
         List<Parameter> channelVolumeParameters = bitwig.channelParameters(Channel::getVolume);
+        channelVolumeParameters.add(bitwig.masterTrack().getVolume());
 
         addMode("Mixer", impulse.faderMixerModeButton(), channelVolumeParameters, 1);
     }

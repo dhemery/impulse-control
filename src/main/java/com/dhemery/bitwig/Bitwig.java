@@ -54,4 +54,8 @@ public class Bitwig {
     public void error(String error) {
         host.errorln(error);
     }
+
+    public Channel masterTrack() {
+        return host.createMasterTrack(0);
+    }
 }
