@@ -39,7 +39,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.5"
+    gradleVersion = "4.3"
 }
 
 def bitwigExtensionsDirectory = System.getProperty("user.home") + '/Documents/Bitwig Studio/Extensions'
