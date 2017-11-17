@@ -37,6 +37,7 @@ public class ControlBankController<T extends Control & Normalizing> {
     }
 
     private void enter(ControlMode<T> mode) {
+        if (currentMode == mode) return;
         currentMode.exit();
         currentMode = mode;
         currentMode.enter();
