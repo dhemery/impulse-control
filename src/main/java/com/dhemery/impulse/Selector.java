@@ -1,7 +1,8 @@
-package com.dhemery.impulse.controls;
+package com.dhemery.impulse;
 
 import com.bitwig.extension.controller.api.MidiOut;
-import com.dhemery.impulse.ControlIdentifier;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 
 public class Selector extends Control {
     public Selector(ControlIdentifier identifier) {
@@ -13,6 +14,6 @@ public class Selector extends Control {
     }
 
     private void set(MidiOut out, int value) {
-        out.sendMidi(0xB0 + identifier.channel, identifier.cc, value);
+        out.sendMidi(0xB0 + channel(), cc(), value);
     }
 }

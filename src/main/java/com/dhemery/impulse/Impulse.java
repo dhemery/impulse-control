@@ -1,10 +1,8 @@
 package com.dhemery.impulse;
 
 import com.bitwig.extension.controller.api.MidiOut;
-import com.dhemery.impulse.controls.Control;
-import com.dhemery.impulse.controls.Encoder;
-import com.dhemery.impulse.controls.Fader;
-import com.dhemery.impulse.controls.Selector;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

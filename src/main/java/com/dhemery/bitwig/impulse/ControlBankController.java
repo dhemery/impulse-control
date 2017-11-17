@@ -1,11 +1,9 @@
-package com.dhemery.bitwig.impulse.controllers;
+package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.api.Parameter;
-import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.dhemery.bitwig.Bitwig;
-import com.dhemery.impulse.controls.Control;
-import com.dhemery.impulse.controls.Encoder;
-import com.dhemery.impulse.controls.Normalizing;
+import com.dhemery.midi.Control;
+import com.dhemery.impulse.Normalizing;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.Collections;

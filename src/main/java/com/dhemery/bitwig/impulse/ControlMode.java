@@ -1,16 +1,12 @@
-package com.dhemery.bitwig.impulse.controllers;
+package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.api.Parameter;
-import com.dhemery.bitwig.Bitwig;
-import com.dhemery.impulse.controls.Encoder;
-import com.dhemery.impulse.controls.Normalizing;
+import com.dhemery.impulse.Normalizing;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 public class ControlMode<T extends Normalizing> {

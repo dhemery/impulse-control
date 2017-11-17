@@ -1,6 +1,7 @@
-package com.dhemery.impulse.controls;
+package com.dhemery.impulse;
 
-import com.dhemery.impulse.ControlIdentifier;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 
 public class Fader extends Control implements Normalizing {
     private static final int FADER_MAX_VALUE = 127;

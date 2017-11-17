@@ -1,4 +1,4 @@
-package com.dhemery.impulse.controls;
+package com.dhemery.impulse;
 
 public interface Normalizing {
     /**

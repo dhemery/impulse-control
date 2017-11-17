@@ -1,15 +1,27 @@
-package com.dhemery.impulse;
+package com.dhemery.midi;
 
 /**
  * Identifies a control by its channel and cc number.
  */
 public class ControlIdentifier {
-    public final int channel;
-    public final int cc;
+    private final int channel;
+    private final int cc;
 
     public ControlIdentifier(int channel, int cc) {
         this.channel = channel;
         this.cc = cc;
+    }
+
+    public int channel() {
+        return channel;
+    }
+
+    public int cc() {
+        return cc;
+    }
+
+    public int status() {
+        return 0xB0 + channel;
     }
 
     @Override
@@ -30,6 +42,6 @@ public class ControlIdentifier {
 
     @Override
     public String toString() {
-        return String.format("ch %2x cc %2x", channel, cc);
+        return String.format("channel %2x cc %2x", channel, cc);
     }
 }

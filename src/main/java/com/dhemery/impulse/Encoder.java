@@ -1,6 +1,7 @@
-package com.dhemery.impulse.controls;
+package com.dhemery.impulse;
 
-import com.dhemery.impulse.ControlIdentifier;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlIdentifier;
 
 public class Encoder extends Control implements Normalizing {
     private static final int ENCODER_VALUE_OFFSET = 0x40;

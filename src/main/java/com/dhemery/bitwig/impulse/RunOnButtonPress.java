@@ -1,11 +1,11 @@
-package com.dhemery.bitwig.commands;
+package com.dhemery.bitwig.impulse;
 
 import java.util.function.IntConsumer;
 
-public class ActIfButtonPressed implements IntConsumer {
+public class RunOnButtonPress implements IntConsumer {
     private final Runnable action;
 
-    public ActIfButtonPressed(Runnable action) {
+    public RunOnButtonPress(Runnable action) {
         this.action = action;
     }
 

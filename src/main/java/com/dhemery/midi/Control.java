@@ -1,15 +1,25 @@
-package com.dhemery.impulse.controls;
-
-import com.dhemery.impulse.ControlIdentifier;
+package com.dhemery.midi;
 
 /**
  * Represents a control on a Novation Impulse.
  */
 public class Control {
-    public final ControlIdentifier identifier;
+    private final ControlIdentifier identifier;
 
     public Control(ControlIdentifier identifier) {
         this.identifier = identifier;
+    }
+
+    public ControlIdentifier identifier() {
+        return identifier;
+    }
+
+    public int channel() {
+        return identifier().channel();
+    }
+
+    public int cc() {
+        return identifier().cc();
     }
 
     @Override

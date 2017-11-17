@@ -1,17 +1,13 @@
 package com.dhemery.bitwig.impulse;
 
-import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.*;
-import com.dhemery.bitwig.*;
-import com.dhemery.bitwig.commands.ActIfButtonPressed;
-import com.dhemery.bitwig.commands.ForwardToNoteInput;
-import com.dhemery.bitwig.impulse.controllers.EncoderBankController;
-import com.dhemery.bitwig.impulse.controllers.FaderBankController;
-import com.dhemery.impulse.controls.Control;
-import com.dhemery.impulse.controls.Encoder;
+import com.dhemery.bitwig.ForwardToNoteInput;
+import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.Impulse;
-import com.dhemery.midi.ControlChangeProcessor;
+import com.dhemery.impulse.Encoder;
+import com.dhemery.midi.Control;
+import com.dhemery.midi.ControlChangeMessage;
 
 import java.util.List;
 
@@ -61,12 +57,12 @@ public class ImpulseControl extends ControllerExtension {
         Transport transport = host.createTransport();
         SettableBooleanValue loopEnabled = transport.isArrangerLoopEnabled();
         loopEnabled.markInterested();
-        dispatcher.onValue(impulse.playButton(), new ActIfButtonPressed(transport::play));
-        dispatcher.onValue(impulse.stopButton(), new ActIfButtonPressed(transport::stop));
-        dispatcher.onValue(impulse.rewindButton(), new ActIfButtonPressed(transport::rewind));
-        dispatcher.onValue(impulse.fastForwardButton(), new ActIfButtonPressed(transport::fastForward));
-        dispatcher.onValue(impulse.loopButton(), new ActIfButtonPressed(loopEnabled::toggle));
-        dispatcher.onValue(impulse.recordButton(), new ActIfButtonPressed(transport::record));
+        dispatcher.onValue(impulse.playButton(), new RunOnButtonPress(transport::play));
+        dispatcher.onValue(impulse.stopButton(), new RunOnButtonPress(transport::stop));
+        dispatcher.onValue(impulse.rewindButton(), new RunOnButtonPress(transport::rewind));
+        dispatcher.onValue(impulse.fastForwardButton(), new RunOnButtonPress(transport::fastForward));
+        dispatcher.onValue(impulse.loopButton(), new RunOnButtonPress(loopEnabled::toggle));
+        dispatcher.onValue(impulse.recordButton(), new RunOnButtonPress(transport::record));
 
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
@@ -88,8 +84,8 @@ public class ImpulseControl extends ControllerExtension {
     public void flush() {
     }
 
-    private void warnUnhandled(ShortMidiMessage message) {
-        String warning = String.format("Unhandled MIDI %X%X[%02X,%02X]", message.getStatusByte() >> 4, message.getChannel(), message.getData1(), message.getData2());
+    private void warnUnhandled(ControlChangeMessage message) {
+        String warning = String.format("Unhandled MIDI CC %s value %02X", message.identifier(), message.value());
         bitwig.debug(warning);
     }
 }
