@@ -68,6 +68,7 @@ public class ImpulseControl extends ControllerExtension {
 
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
+        new ButtonBankController(impulse, bitwig, dispatcher);
 
         Stream.of(impulse.faderMidiModeButton(), impulse.encoderMidiModeButton())
                 .forEach(impulse::select);

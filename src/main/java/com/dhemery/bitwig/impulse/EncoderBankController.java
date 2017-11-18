@@ -21,7 +21,7 @@ public class EncoderBankController {
 
     public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         this.bitwig = bitwig;
-        List<Parameter> panParameters = bitwig.channelParameters(Channel::getPan);
+        List<Parameter> panParameters = bitwig.channelFeatures(Channel::getPan);
         List<Parameter> remoteControls = bitwig.remoteControls();
         List<Encoder> encoders = impulse.mixerEncoders();
 

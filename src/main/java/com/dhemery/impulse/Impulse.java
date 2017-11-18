@@ -55,7 +55,7 @@ public class Impulse {
     private static final int ENCODER_PLUGIN_MODE_BUTTON_CC = 0x0A;
 
     private final List<Control> midiControls = new ArrayList<>();
-    private final List<Toggle> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, Toggle::new);
+    private final List<MomentaryButton> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, MomentaryButton::new);
     private final List<Encoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Encoder::new);
     private final List<Fader> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Fader::new);
     private final Control playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, Control::new);
@@ -64,7 +64,7 @@ public class Impulse {
     private final Control fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, Control::new);
     private final Control recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, Control::new);
     private final Control loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, Control::new);
-    private final Selector faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Selector::new);
+    private final Toggle faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Toggle::new);
     private final Selector faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Selector::new);
     private final Selector encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Selector::new);
     private final Selector encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Selector::new);
@@ -83,7 +83,7 @@ public class Impulse {
         return midiControls;
     }
 
-    public List<Toggle> mixerButtons() {
+    public List<MomentaryButton> mixerButtons() {
         return mixerButtons;
     }
 
@@ -119,7 +119,7 @@ public class Impulse {
         return loopButton;
     }
 
-    public Selector faderMixerModeButton() {
+    public Toggle faderMixerModeButton() {
         return faderMixerModeButton;
     }
 
@@ -155,5 +155,9 @@ public class Impulse {
 
     public void select(Selector selector) {
         port.sendMidi(selector.status(), selector.cc(), 1);
+    }
+
+    public void setLight(MomentaryButton button, boolean illuminationState) {
+        port.sendMidi(button.status(), button.cc(), button.illuminationValue(illuminationState));
     }
 }

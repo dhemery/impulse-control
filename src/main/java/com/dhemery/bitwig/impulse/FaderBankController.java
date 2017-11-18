@@ -19,7 +19,7 @@ public class FaderBankController {
 
     public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         this.bitwig = bitwig;
-        List<Parameter> panParameters = bitwig.channelParameters(Channel::getVolume);
+        List<Parameter> panParameters = bitwig.channelFeatures(Channel::getVolume);
         List<Fader> faders = impulse.mixerFaders();
 
         FaderMode midiMode = new FaderMode("MIDI");

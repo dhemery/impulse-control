@@ -33,7 +33,7 @@ public class Bitwig {
                 .collect(toList());
     }
 
-    public List<Parameter> channelParameters(Function<Channel, Parameter> mapper) {
+    public <T> List<T> channelFeatures(Function<Channel, T> mapper) {
         return channels.stream()
                 .map(mapper)
                 .collect(toList());
