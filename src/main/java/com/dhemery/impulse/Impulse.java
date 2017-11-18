@@ -55,7 +55,7 @@ public class Impulse {
     private static final int ENCODER_PLUGIN_MODE_BUTTON_CC = 0x0A;
 
     private final List<Control> midiControls = new ArrayList<>();
-    private final List<Control> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, Control::new);
+    private final List<Toggle> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, Toggle::new);
     private final List<Encoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Encoder::new);
     private final List<Fader> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Fader::new);
     private final Control playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, Control::new);
@@ -69,8 +69,10 @@ public class Impulse {
     private final Selector encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Selector::new);
     private final Selector encoderMixerModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIXER_MODE_BUTTON_CC, Selector::new);
     private final Selector encoderPluginModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_PLUGIN_MODE_BUTTON_CC, Selector::new);
+    private final MidiOut port;
 
     public Impulse(MidiOut port) {
+        this.port = port;
         port.sendSysex(CONNECT_TO_COMPUTER);
         midiControls.addAll(makeControls(MIDI_BUTTON_CHANNEL, MIDI_BUTTON_BASE_CC, BUTTON_COUNT, Control::new));
         midiControls.addAll(makeControls(MIDI_ENCODER_CHANNEL, MIDI_ENCODER_BASE_CC, ENCODER_COUNT, Control::new));
@@ -81,7 +83,7 @@ public class Impulse {
         return midiControls;
     }
 
-    public List<Control> mixerButtons() {
+    public List<Toggle> mixerButtons() {
         return mixerButtons;
     }
 
@@ -149,5 +151,9 @@ public class Impulse {
 
     private static String sysexMessage(String content) {
         return String.format(MESSAGE_FORMAT, content);
+    }
+
+    public void select(Selector selector) {
+        port.sendMidi(selector.status(), selector.cc(), 1);
     }
 }

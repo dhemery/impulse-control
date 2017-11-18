@@ -22,6 +22,10 @@ public class Control {
         return identifier().cc();
     }
 
+    public int status() {
+        return identifier().status();
+    }
+
     @Override
     public String toString() {
         return String.format("%s %s", getClass().getSimpleName(), identifier);

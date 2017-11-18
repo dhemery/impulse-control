@@ -6,10 +6,12 @@ import com.dhemery.bitwig.ForwardToNoteInput;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.impulse.Encoder;
+import com.dhemery.impulse.Selector;
 import com.dhemery.midi.Control;
 import com.dhemery.midi.ControlChangeMessage;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.dhemery.impulse.Port.USB;
 
@@ -67,8 +69,8 @@ public class ImpulseControl extends ControllerExtension {
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
 
-        impulse.encoderMidiModeButton().select(midiOutPort);
-        impulse.faderMidiModeButton().select(midiOutPort);
+        Stream.of(impulse.faderMidiModeButton(), impulse.encoderMidiModeButton())
+                .forEach(impulse::select);
 
         midiInPort.setMidiCallback(dispatcher);
 
