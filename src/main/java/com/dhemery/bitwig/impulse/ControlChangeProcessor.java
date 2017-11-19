@@ -26,7 +26,7 @@ public class ControlChangeProcessor implements ShortMidiMessageReceivedCallback,
 
     @Override
     public void onMessage(Control control, Consumer<ControlChangeMessage> action) {
-        actionsByControl.put(control.identifier(), action);
+        actionsByControl.merge(control.identifier(), action, Consumer::andThen);
     }
 
     @Override

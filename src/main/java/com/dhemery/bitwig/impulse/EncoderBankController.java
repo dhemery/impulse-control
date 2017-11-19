@@ -42,7 +42,7 @@ public class EncoderBankController {
         mode.exit();
         mode = newMode;
         mode.enter();
-        bitwig.status(String.format("Encoders -> %s", mode));
+        bitwig.debug(String.format("Encoders -> %s", mode));
     }
 
     private void onEncoderChange(Encoder encoder, int value) {

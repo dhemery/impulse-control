@@ -49,7 +49,7 @@ public class ButtonBankController {
         if (this.mode == mode) return;
         this.mode = mode;
         this.mode.enter();
-        bitwig.status(String.format("Buttons -> %s", this.mode));
+        bitwig.debug(String.format("Buttons -> %s", this.mode));
     }
 
     private void onMuteSoloButtonStateChange(IlluminableMomentaryButton button, int state) {

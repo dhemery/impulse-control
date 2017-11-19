@@ -32,11 +32,12 @@ public class FaderBankController {
         faders.forEach(c -> dispatcher.onValue(c, this::onFaderChange));
     }
 
-    private void enter(FaderMode newMode) {
-        mode.exit();
-        mode = newMode;
-        mode.enter();
-        bitwig.status(String.format("Faders -> %s", mode));
+    private void enter(FaderMode mode) {
+        if(this.mode == mode) return;
+        this.mode.exit();
+        this.mode = mode;
+        this.mode.enter();
+        bitwig.debug(String.format("Faders -> %s", this.mode));
     }
 
     private void onFaderChange(Fader encoder, int value) {
