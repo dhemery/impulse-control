@@ -55,15 +55,15 @@ public class Impulse {
     private static final int ENCODER_PLUGIN_MODE_BUTTON_CC = 0x0A;
 
     private final List<Control> midiControls = new ArrayList<>();
-    private final List<MomentaryButton> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, MomentaryButton::new);
+    private final List<IlluminableMomentaryButton> mixerButtons = makeControls(MIXER_BUTTON_CHANNEL, MIXER_BUTTON_BASE_CC, BUTTON_COUNT, IlluminableMomentaryButton::new);
     private final List<Encoder> mixerEncoders = makeControls(MIXER_ENCODER_CHANNEL, MIXER_ENCODER_BASE_CC, ENCODER_COUNT, Encoder::new);
     private final List<Fader> mixerFaders = makeControls(MIXER_FADER_CHANNEL, MIXER_FADER_BASE_CC, FADER_COUNT, Fader::new);
-    private final Control playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, Control::new);
-    private final Control stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, Control::new);
-    private final Control rewindButton = makeControl(TRANSPORT_CC_CHANNEL, REWIND_BUTTON_CC, Control::new);
-    private final Control fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, Control::new);
-    private final Control recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, Control::new);
-    private final Control loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, Control::new);
+    private final MomentaryButton playButton = makeControl(TRANSPORT_CC_CHANNEL, PLAY_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton stopButton = makeControl(TRANSPORT_CC_CHANNEL, STOP_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton rewindButton = makeControl(TRANSPORT_CC_CHANNEL, REWIND_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton fastForwardButton = makeControl(TRANSPORT_CC_CHANNEL, FAST_FORWARD_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton recordButton = makeControl(TRANSPORT_CC_CHANNEL, RECORD_BUTTON_CC, MomentaryButton::new);
+    private final MomentaryButton loopButton = makeControl(TRANSPORT_CC_CHANNEL, LOOP_BUTTON_CC, MomentaryButton::new);
     private final Toggle faderMixerModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIXER_MODE_BUTTON_CC, Toggle::new);
     private final Selector faderMidiModeButton = makeControl(FADER_MODE_CC_CHANNEL, FADER_MIDI_MODE_BUTTON_CC, Selector::new);
     private final Selector encoderMidiModeButton = makeControl(ENCODER_MODE_CC_CHANNEL, ENCODER_MIDI_MODE_BUTTON_CC, Selector::new);
@@ -83,7 +83,7 @@ public class Impulse {
         return midiControls;
     }
 
-    public List<MomentaryButton> mixerButtons() {
+    public List<IlluminableMomentaryButton> mixerButtons() {
         return mixerButtons;
     }
 
@@ -95,27 +95,27 @@ public class Impulse {
         return mixerFaders;
     }
 
-    public Control playButton() {
+    public MomentaryButton playButton() {
         return playButton;
     }
 
-    public Control stopButton() {
+    public MomentaryButton stopButton() {
         return stopButton;
     }
 
-    public Control rewindButton() {
+    public MomentaryButton rewindButton() {
         return rewindButton;
     }
 
-    public Control fastForwardButton() {
+    public MomentaryButton fastForwardButton() {
         return fastForwardButton;
     }
 
-    public Control recordButton() {
+    public MomentaryButton recordButton() {
         return recordButton;
     }
 
-    public Control loopButton() {
+    public MomentaryButton loopButton() {
         return loopButton;
     }
 
@@ -154,10 +154,14 @@ public class Impulse {
     }
 
     public void select(Selector selector) {
-        port.sendMidi(selector.status(), selector.cc(), 1);
+        selector.select(this::send);
     }
 
-    public void setLight(MomentaryButton button, boolean illuminationState) {
-        port.sendMidi(button.status(), button.cc(), button.illuminationValue(illuminationState));
+    public void illuminate(IlluminableMomentaryButton button, boolean illuminationState) {
+        button.set(illuminationState, this::send);
+    }
+
+    private void send(Control control, int value) {
+        port.sendMidi(control.status(), control.cc(), value);
     }
 }

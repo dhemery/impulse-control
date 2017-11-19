@@ -26,8 +26,8 @@ public class EncoderBankController {
         List<Encoder> encoders = impulse.mixerEncoders();
 
         EncoderMode midiMode = new EncoderMode("MIDI");
-        EncoderMode mixerMode = new EncoderMode("Mixer", encoders, panParameters, PAN_STEP_SIZE);
-        EncoderMode pluginMode = new EncoderMode("Plugin", encoders, remoteControls, REMOTE_CONTROL_STEP_SIZE);
+        EncoderMode mixerMode = new EncoderMode("Channel Pan", encoders, panParameters, PAN_STEP_SIZE);
+        EncoderMode pluginMode = new EncoderMode("Remote Control", encoders, remoteControls, REMOTE_CONTROL_STEP_SIZE);
 
         mode = midiMode;
 
@@ -42,7 +42,7 @@ public class EncoderBankController {
         mode.exit();
         mode = newMode;
         mode.enter();
-        bitwig.status(String.format("Encoder %s mode", mode));
+        bitwig.status(String.format("Encoders -> %s", mode));
     }
 
     private void onEncoderChange(Encoder encoder, int value) {

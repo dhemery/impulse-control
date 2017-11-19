@@ -8,11 +8,7 @@ public class MomentaryButton extends Control {
         super(identifier);
     }
 
-    public boolean isPressed(int value) {
-        return value > 0;
-    }
-
-    public int illuminationValue(boolean illuminationState) {
-        return illuminationState ? 1 : 0;
+    public void ifPressed(int value, Runnable action) {
+        if(value > 0) action.run();
     }
 }

@@ -4,6 +4,7 @@ import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.Value;
 import com.dhemery.bitwig.Bitwig;
+import com.dhemery.impulse.IlluminableMomentaryButton;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.impulse.MomentaryButton;
 import com.dhemery.impulse.Toggle;
@@ -26,10 +27,10 @@ public class ButtonBankController {
         this.bitwig = bitwig;
         List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
         List<SettableBooleanValue> soloStates = bitwig.channelFeatures(Channel::getSolo);
-        List<MomentaryButton> buttons = impulse.mixerButtons();
+        List<IlluminableMomentaryButton> buttons = impulse.mixerButtons();
 
-        soloMode = new ButtonMode("Channel Solo Button", buttons, soloStates);
-        muteMode = new ButtonMode("Channel Mute Button", buttons, muteStates);
+        soloMode = new ButtonMode("Channel Solo", buttons, soloStates);
+        muteMode = new ButtonMode("Channel Mute", buttons, muteStates);
 
         ButtonMode midiMode = new ButtonMode("MIDI");
         mode = midiMode;
@@ -45,20 +46,21 @@ public class ButtonBankController {
     }
 
     private void enter(ButtonMode mode) {
+        if (this.mode == mode) return;
         this.mode = mode;
         this.mode.enter();
-        bitwig.status(String.format("%s mode", this.mode));
+        bitwig.status(String.format("Buttons -> %s", this.mode));
     }
 
-    private void onMuteSoloButtonStateChange(MomentaryButton button, int state) {
+    private void onMuteSoloButtonStateChange(IlluminableMomentaryButton button, int state) {
         mode.accept(button, state);
     }
 
-    private class ButtonMode implements ObjIntConsumer<MomentaryButton> {
+    private class ButtonMode implements ObjIntConsumer<IlluminableMomentaryButton> {
         private final String name;
-        private final HashMap<MomentaryButton, SettableBooleanValue> channelStateByButton = new HashMap<>();
+        private final HashMap<IlluminableMomentaryButton, SettableBooleanValue> channelStateByButton = new HashMap<>();
 
-        public ButtonMode(String name, List<MomentaryButton> buttons, List<SettableBooleanValue> channelStates) {
+        public ButtonMode(String name, List<IlluminableMomentaryButton> buttons, List<SettableBooleanValue> channelStates) {
             this.name = name;
             for(int i = 0 ; i < channelStates.size(); i++) channelStateByButton.put(buttons.get(i), channelStates.get(i));
             channelStates.forEach(Value::markInterested);
@@ -68,19 +70,19 @@ public class ButtonBankController {
             this(name, Collections.emptyList(), Collections.emptyList());
         }
 
+        public void enter() {
+            channelStateByButton.forEach(this::setIllumination);
+        }
+
         @Override
-        public void accept(MomentaryButton button, int buttonState) {
+        public void accept(IlluminableMomentaryButton button, int buttonState) {
             SettableBooleanValue channelState = channelStateByButton.get(button);
-            if(button.isPressed(buttonState)) channelState.toggle();
+            button.ifPressed(buttonState, channelState::toggle);
             setIllumination(button, channelState);
         }
 
-        private void setIllumination(MomentaryButton button, SettableBooleanValue channelState) {
-            impulse.setLight(button, channelState.get());
-        }
-
-        public void enter() {
-            channelStateByButton.forEach(this::setIllumination);
+        private void setIllumination(IlluminableMomentaryButton button, SettableBooleanValue channelState) {
+            impulse.illuminate(button, channelState.get());
         }
 
         @Override
@@ -89,7 +91,3 @@ public class ButtonBankController {
         }
     }
 }
-
-
-
-

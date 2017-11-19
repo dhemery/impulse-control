@@ -23,7 +23,7 @@ public class FaderBankController {
         List<Fader> faders = impulse.mixerFaders();
 
         FaderMode midiMode = new FaderMode("MIDI");
-        FaderMode mixerMode = new FaderMode("Mixer", faders, panParameters);
+        FaderMode mixerMode = new FaderMode("Channel Volume", faders, panParameters);
         mode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
@@ -36,7 +36,7 @@ public class FaderBankController {
         mode.exit();
         mode = newMode;
         mode.enter();
-        bitwig.status(String.format("Fader %s mode", mode));
+        bitwig.status(String.format("Faders -> %s", mode));
     }
 
     private void onFaderChange(Fader encoder, int value) {
@@ -76,8 +76,3 @@ public class FaderBankController {
         }
     }
 }
-
-
-
-
-
