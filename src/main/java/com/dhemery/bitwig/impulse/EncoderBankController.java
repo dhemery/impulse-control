@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;
 
+import static java.lang.String.format;
+
 public class EncoderBankController {
     private static final double REMOTE_CONTROL_STEP_SIZE = 0.01;
     private static final double PAN_STEP_SIZE = 0.005;
     private final Bitwig bitwig;
-    private EncoderMode mode;
+    private final String name;
+    private EncoderMode currentMode;
 
     public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
+        name = "Encoders";
         this.bitwig = bitwig;
         List<Parameter> panParameters = bitwig.channelFeatures(Channel::getPan);
         List<Parameter> remoteControls = bitwig.remoteControls();
@@ -29,24 +33,32 @@ public class EncoderBankController {
         EncoderMode mixerMode = new EncoderMode("Channel Pan", encoders, panParameters, PAN_STEP_SIZE);
         EncoderMode pluginMode = new EncoderMode("Remote Control", encoders, remoteControls, REMOTE_CONTROL_STEP_SIZE);
 
-        mode = midiMode;
+        currentMode = midiMode;
 
         dispatcher.onTouch(impulse.encoderMidiModeButton(), () -> enter(midiMode));
         dispatcher.onTouch(impulse.encoderMixerModeButton(), () -> enter(mixerMode));
         dispatcher.onTouch(impulse.encoderPluginModeButton(), () -> enter(pluginMode));
 
-        encoders.forEach(c -> dispatcher.onValue(c, this::onEncoderChange));
+        encoders.forEach(c -> dispatcher.onValue(c, this::onControlChange));
     }
 
     private void enter(EncoderMode newMode) {
-        mode.exit();
-        mode = newMode;
-        mode.enter();
-        bitwig.debug(String.format("Encoders -> %s", mode));
+        currentMode.exit();
+        currentMode = newMode;
+        currentMode.enter();
     }
 
-    private void onEncoderChange(Encoder encoder, int value) {
-        mode.accept(encoder, value);
+    private void onControlChange(Encoder encoder, int value) {
+        currentMode.accept(encoder, value);
+    }
+
+    private void debug(String message) {
+        bitwig.debug(format("%s %s", this, message));
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     private class EncoderMode implements ObjIntConsumer<Encoder> {
@@ -72,6 +84,7 @@ public class EncoderBankController {
 
         public void enter() {
             parametersByEncoder.values().forEach(p -> p.setIndication(true));
+            debug(format("-> %s", this));
         }
 
         public void exit() {
@@ -84,8 +97,3 @@ public class EncoderBankController {
         }
     }
 }
-
-
-
-
-

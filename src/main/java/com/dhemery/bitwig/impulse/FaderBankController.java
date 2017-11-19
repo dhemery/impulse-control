@@ -13,35 +13,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;
 
+import static java.lang.String.format;
+
 public class FaderBankController {
+    private final String name;
     private final Bitwig bitwig;
-    private FaderMode mode;
+    private FaderMode currentMode;
 
     public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
+        name = "Faders";
         this.bitwig = bitwig;
         List<Parameter> panParameters = bitwig.channelFeatures(Channel::getVolume);
         List<Fader> faders = impulse.mixerFaders();
 
         FaderMode midiMode = new FaderMode("MIDI");
         FaderMode mixerMode = new FaderMode("Channel Volume", faders, panParameters);
-        mode = midiMode;
+        currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
         dispatcher.onTouch(impulse.faderMixerModeButton(), () -> enter(mixerMode));
 
-        faders.forEach(c -> dispatcher.onValue(c, this::onFaderChange));
+        faders.forEach(c -> dispatcher.onValue(c, this::onControlChange));
     }
 
-    private void enter(FaderMode mode) {
-        if(this.mode == mode) return;
-        this.mode.exit();
-        this.mode = mode;
-        this.mode.enter();
-        bitwig.debug(String.format("Faders -> %s", this.mode));
+    private void enter(FaderMode newMode) {
+        if(currentMode == newMode) return;
+        currentMode.exit();
+        currentMode = newMode;
+        currentMode.enter();
     }
 
-    private void onFaderChange(Fader encoder, int value) {
-        mode.accept(encoder, value);
+    private void onControlChange(Fader encoder, int value) {
+        currentMode.accept(encoder, value);
+    }
+
+    private void debug(String message) {
+        bitwig.debug(format("%s %s", name, message));
     }
 
     private class FaderMode implements ObjIntConsumer<Fader> {
@@ -65,6 +72,7 @@ public class FaderBankController {
 
         public void enter() {
             parametersByFader.values().forEach(p -> p.setIndication(true));
+            debug(format("-> %s", this));
         }
 
         public void exit() {

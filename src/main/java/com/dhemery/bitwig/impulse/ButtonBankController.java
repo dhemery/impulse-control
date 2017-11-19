@@ -14,14 +14,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.ObjIntConsumer;
 
+import static java.lang.String.format;
+
 public class ButtonBankController {
     private final Impulse impulse;
     private final Bitwig bitwig;
     private ButtonMode currentMode;
     private final ButtonMode soloMode;
     private final ButtonMode muteMode;
+    private final String name;
 
     public ButtonBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
+        name = "Buttons";
         this.impulse = impulse;
         this.bitwig = bitwig;
         List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
@@ -35,12 +39,12 @@ public class ButtonBankController {
         currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
-        dispatcher.onValue(impulse.faderMixerModeButton(), this::enterMixerButtonMode);
+        dispatcher.onValue(impulse.faderMixerModeButton(), this::onMixerModeButtonChange);
 
-        buttons.forEach(c -> dispatcher.onValue(c, this::onMuteSoloButtonStateChange));
+        buttons.forEach(c -> dispatcher.onValue(c, this::onControlChange));
     }
 
-    private void enterMixerButtonMode(Toggle button, int buttonState) {
+    private void onMixerModeButtonChange(Toggle button, int buttonState) {
         enter(button.isOn(buttonState) ? muteMode : soloMode);
     }
 
@@ -52,10 +56,15 @@ public class ButtonBankController {
     }
 
     private void debug(String message) {
-        bitwig.debug(message);
+        bitwig.debug(format("%s %s", this, message));
     }
 
-    private void onMuteSoloButtonStateChange(IlluminableMomentaryButton button, int state) {
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    private void onControlChange(IlluminableMomentaryButton button, int state) {
         currentMode.accept(button, state);
     }
 
@@ -80,19 +89,19 @@ public class ButtonBankController {
             button.ifPressed(value, parameter::toggle);
         }
 
-        @Override
-        public String toString() {
-            return name;
-        }
-
         public void enter() {
             parametersByButton.values().forEach(Subscribable::subscribe);
             parametersByButton.forEach((b, v) -> impulse.illuminate(b, v.get()));
-            debug(String.format("Buttons -> %s", currentMode));
+            debug(format("-> %s", this));
         }
 
         public void exit() {
             parametersByButton.values().forEach(Subscribable::unsubscribe);
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }
