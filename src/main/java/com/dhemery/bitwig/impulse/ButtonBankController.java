@@ -2,7 +2,7 @@ package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
-import com.bitwig.extension.controller.api.Value;
+import com.bitwig.extension.controller.api.Subscribable;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.IlluminableMomentaryButton;
 import com.dhemery.impulse.Impulse;
@@ -12,8 +12,6 @@ import com.dhemery.midi.ControlChangeDispatcher;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 
 public class ButtonBankController {
@@ -59,22 +57,14 @@ public class ButtonBankController {
     }
 
     private class ButtonMode implements ObjIntConsumer<IlluminableMomentaryButton> {
-        private final BiConsumer<IlluminableMomentaryButton,Boolean> ignoreStateChange = (b,s) -> {};
-        private final BiConsumer<IlluminableMomentaryButton,Boolean> updateButtonIllumination = impulse::illuminate;
         private final String name;
-        private final HashMap<IlluminableMomentaryButton, SettableBooleanValue> valuesByButton = new HashMap<>();
-        private BiConsumer<IlluminableMomentaryButton, Boolean> valueChangeAction;
+        private final HashMap<IlluminableMomentaryButton, SettableBooleanValue> parametersByButton = new HashMap<>();
 
-        public ButtonMode(String name, List<IlluminableMomentaryButton> buttons, List<SettableBooleanValue> channelStates) {
+        public ButtonMode(String name, List<IlluminableMomentaryButton> buttons, List<SettableBooleanValue> parameters) {
             this.name = name;
-            for(int i = 0 ; i < channelStates.size(); i++) valuesByButton.put(buttons.get(i), channelStates.get(i));
-            channelStates.forEach(Value::markInterested);
-            valuesByButton.forEach((button, value) -> value.addValueObserver(channelValue -> onValueChange(button, channelValue)));
-            valueChangeAction = ignoreStateChange;
-        }
-
-        private void onValueChange(IlluminableMomentaryButton button, boolean channelStateValue) {
-            if(mode == this) impulse.illuminate(button, channelStateValue);
+            for(int i = 0 ; i < parameters.size(); i++) parametersByButton.put(buttons.get(i), parameters.get(i));
+            parametersByButton.forEach((b, p) -> p.addValueObserver(v -> impulse.illuminate(b, v)));
+            parameters.forEach(Subscribable::unsubscribe);
         }
 
         public ButtonMode(String name) {
@@ -82,9 +72,9 @@ public class ButtonBankController {
         }
 
         @Override
-        public void accept(IlluminableMomentaryButton button, int buttonState) {
-            SettableBooleanValue channelState = valuesByButton.get(button);
-            button.ifPressed(buttonState, channelState::toggle);
+        public void accept(IlluminableMomentaryButton button, int value) {
+            SettableBooleanValue parameter = parametersByButton.get(button);
+            button.ifPressed(value, parameter::toggle);
         }
 
         @Override
@@ -93,12 +83,12 @@ public class ButtonBankController {
         }
 
         public void enter() {
-            valuesByButton.forEach((b, v) -> impulse.illuminate(b, v.get()));
-            valueChangeAction = updateButtonIllumination;
+            parametersByButton.values().forEach(Subscribable::subscribe);
+            parametersByButton.forEach((b, v) -> impulse.illuminate(b, v.get()));
         }
 
         public void exit() {
-            valueChangeAction = ignoreStateChange;
+            parametersByButton.values().forEach(Subscribable::unsubscribe);
         }
     }
 }
