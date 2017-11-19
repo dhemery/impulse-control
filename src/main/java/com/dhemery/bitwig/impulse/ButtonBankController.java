@@ -17,7 +17,7 @@ import java.util.function.ObjIntConsumer;
 public class ButtonBankController {
     private final Impulse impulse;
     private final Bitwig bitwig;
-    private ButtonMode mode;
+    private ButtonMode currentMode;
     private final ButtonMode soloMode;
     private final ButtonMode muteMode;
 
@@ -32,7 +32,7 @@ public class ButtonBankController {
         muteMode = new ButtonMode("Channel Mute", buttons, muteStates);
 
         ButtonMode midiMode = new ButtonMode("MIDI");
-        mode = midiMode;
+        currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
         dispatcher.onValue(impulse.faderMixerModeButton(), this::enterMixerButtonMode);
@@ -44,16 +44,19 @@ public class ButtonBankController {
         enter(button.isOn(buttonState) ? muteMode : soloMode);
     }
 
-    private void enter(ButtonMode mode) {
-        if (this.mode == mode) return;
-        mode.exit();
-        this.mode = mode;
-        mode.enter();
-        bitwig.debug(String.format("Buttons -> %s", this.mode));
+    private void enter(ButtonMode newMode) {
+        if (currentMode == newMode) return;
+        currentMode.exit();
+        currentMode = newMode;
+        currentMode.enter();
+    }
+
+    private void debug(String message) {
+        bitwig.debug(message);
     }
 
     private void onMuteSoloButtonStateChange(IlluminableMomentaryButton button, int state) {
-        mode.accept(button, state);
+        currentMode.accept(button, state);
     }
 
     private class ButtonMode implements ObjIntConsumer<IlluminableMomentaryButton> {
@@ -85,6 +88,7 @@ public class ButtonBankController {
         public void enter() {
             parametersByButton.values().forEach(Subscribable::subscribe);
             parametersByButton.forEach((b, v) -> impulse.illuminate(b, v.get()));
+            debug(String.format("Buttons -> %s", currentMode));
         }
 
         public void exit() {
