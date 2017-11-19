@@ -6,13 +6,14 @@ import com.bitwig.extension.controller.api.Value;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.impulse.IlluminableMomentaryButton;
 import com.dhemery.impulse.Impulse;
-import com.dhemery.impulse.MomentaryButton;
 import com.dhemery.impulse.Toggle;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 
 public class ButtonBankController {
@@ -47,8 +48,9 @@ public class ButtonBankController {
 
     private void enter(ButtonMode mode) {
         if (this.mode == mode) return;
+        mode.exit();
         this.mode = mode;
-        this.mode.enter();
+        mode.enter();
         bitwig.debug(String.format("Buttons -> %s", this.mode));
     }
 
@@ -57,37 +59,46 @@ public class ButtonBankController {
     }
 
     private class ButtonMode implements ObjIntConsumer<IlluminableMomentaryButton> {
+        private final BiConsumer<IlluminableMomentaryButton,Boolean> ignoreStateChange = (b,s) -> {};
+        private final BiConsumer<IlluminableMomentaryButton,Boolean> updateButtonIllumination = impulse::illuminate;
         private final String name;
-        private final HashMap<IlluminableMomentaryButton, SettableBooleanValue> channelStateByButton = new HashMap<>();
+        private final HashMap<IlluminableMomentaryButton, SettableBooleanValue> valuesByButton = new HashMap<>();
+        private BiConsumer<IlluminableMomentaryButton, Boolean> valueChangeAction;
 
         public ButtonMode(String name, List<IlluminableMomentaryButton> buttons, List<SettableBooleanValue> channelStates) {
             this.name = name;
-            for(int i = 0 ; i < channelStates.size(); i++) channelStateByButton.put(buttons.get(i), channelStates.get(i));
+            for(int i = 0 ; i < channelStates.size(); i++) valuesByButton.put(buttons.get(i), channelStates.get(i));
             channelStates.forEach(Value::markInterested);
+            valuesByButton.forEach((button, value) -> value.addValueObserver(channelValue -> onValueChange(button, channelValue)));
+            valueChangeAction = ignoreStateChange;
+        }
+
+        private void onValueChange(IlluminableMomentaryButton button, boolean channelStateValue) {
+            if(mode == this) impulse.illuminate(button, channelStateValue);
         }
 
         public ButtonMode(String name) {
             this(name, Collections.emptyList(), Collections.emptyList());
         }
 
-        public void enter() {
-            channelStateByButton.forEach(this::setIllumination);
-        }
-
         @Override
         public void accept(IlluminableMomentaryButton button, int buttonState) {
-            SettableBooleanValue channelState = channelStateByButton.get(button);
+            SettableBooleanValue channelState = valuesByButton.get(button);
             button.ifPressed(buttonState, channelState::toggle);
-            setIllumination(button, channelState);
-        }
-
-        private void setIllumination(IlluminableMomentaryButton button, SettableBooleanValue channelState) {
-            impulse.illuminate(button, channelState.get());
         }
 
         @Override
         public String toString() {
             return name;
+        }
+
+        public void enter() {
+            valuesByButton.forEach((b, v) -> impulse.illuminate(b, v.get()));
+            valueChangeAction = updateButtonIllumination;
+        }
+
+        public void exit() {
+            valueChangeAction = ignoreStateChange;
         }
     }
 }
