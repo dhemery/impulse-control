@@ -3,16 +3,21 @@ package com.dhemery.bitwig.impulse;
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.*;
 import com.dhemery.bitwig.Bitwig;
+import com.dhemery.bitwig.BooleanTogglerMode;
 import com.dhemery.bitwig.ForwardToNoteInput;
 import com.dhemery.impulse.Encoder;
 import com.dhemery.impulse.Impulse;
+import com.dhemery.impulse.MomentaryButton;
+import com.dhemery.impulse.Toggle;
 import com.dhemery.midi.Control;
 import com.dhemery.midi.ControlChangeMessage;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.dhemery.impulse.Port.USB;
+import static java.lang.String.format;
 
 public class ImpulseControl extends ControllerExtension {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -65,9 +70,24 @@ public class ImpulseControl extends ControllerExtension {
         dispatcher.onValue(impulse.loopButton(), new RunOnButtonPress(loopEnabled::toggle));
         dispatcher.onValue(impulse.recordButton(), new RunOnButtonPress(transport::record));
 
+
         new EncoderBankController(impulse, bitwig, dispatcher);
         new FaderBankController(impulse, bitwig, dispatcher);
-        new ButtonBankController(impulse, bitwig, dispatcher);
+
+        Mode midiMode = new UninvocableMode("MIDI", bitwig::debug);
+        ButtonBankController buttonBankController = new ButtonBankController(impulse, bitwig, dispatcher, midiMode);
+        Runnable midiModeSetter = new SingletonModeSetter(buttonBankController, midiMode);
+
+        List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
+        List<SettableBooleanValue> soloStates = bitwig.channelFeatures(Channel::getSolo);
+
+        Mode channelSoloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
+        Mode channelMuteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
+
+        Consumer<Integer> mixerModeSetter = new MappingModeSetter(buttonBankController, v -> Toggle.isOn(v) ? channelMuteMode : channelSoloMode);
+
+        dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
+        dispatcher.onValue(impulse.faderMixerModeButton(), mixerModeSetter);
 
         Stream.of(impulse.faderMidiModeButton(), impulse.encoderMidiModeButton())
                 .forEach(impulse::select);

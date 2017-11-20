@@ -1,12 +1,8 @@
 package com.dhemery.bitwig.impulse;
 
-import com.bitwig.extension.controller.api.Channel;
-import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.dhemery.bitwig.Bitwig;
-import com.dhemery.bitwig.BooleanTogglerMode;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.impulse.MomentaryButton;
-import com.dhemery.impulse.Toggle;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
@@ -18,34 +14,19 @@ import static java.lang.String.format;
 public class ButtonBankController implements Consumer<Mode> {
     private final Bitwig bitwig;
     private Mode currentMode;
-    private final Mode soloMode;
-    private final Mode muteMode;
     private final String name;
 
-    public ButtonBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
+    public ButtonBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher, Mode initialMode) {
         name = "Buttons";
         this.bitwig = bitwig;
+        currentMode = initialMode;
+
         List<? extends MomentaryButton> buttons = impulse.mixerButtons();
-        List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
-        List<SettableBooleanValue> soloStates = bitwig.channelFeatures(Channel::getSolo);
-
-        soloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
-        muteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
-
-        Mode midiMode = new UninvocableMode("MIDI", this::debug);
-        currentMode = midiMode;
-
-        Runnable midiModeSetter = new SingletonModeSetter(this, midiMode);
-        Consumer<Integer> mixerModeSetter = new MappingModeSetter(this, v -> Toggle.isOn(v) ? muteMode : soloMode);
-
-        dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
-        dispatcher.onValue(impulse.faderMixerModeButton(), mixerModeSetter);
-
         IntStream.range(0, buttons.size())
                 .forEach(i -> dispatcher.onValue(buttons.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void debug(String message) {
+    public void debug(String message) {
         bitwig.debug(format("%s: %s", this, message));
     }
 
