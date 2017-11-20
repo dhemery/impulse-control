@@ -76,7 +76,7 @@ public class ImpulseControl extends ControllerExtension {
         Mode midiMode = new UninvocableMode("MIDI", bitwig::debug);
 
         // Initialize channel fader controller and modes
-        ChannelFaderController channelFaderController = new ChannelFaderController(impulse, dispatcher, midiMode, bitwig::debug);
+        ControlChangeController channelFaderController = new ChannelFaderController(impulse, dispatcher, midiMode, bitwig::debug);
         List<Parameter> volumeParameters = bitwig.channelFeatures(Channel::getVolume);
 
         Mode channelFaderMixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
@@ -88,7 +88,7 @@ public class ImpulseControl extends ControllerExtension {
         dispatcher.onTouch(impulse.channelMixerModeButton(), channelFaderMixerModeSetter);
 
         // Initialize channel button controller and modes
-        ChannelButtonController channelButtonController = new ChannelButtonController(impulse, dispatcher, midiMode, bitwig::debug);
+        ControlChangeController channelButtonController = new ChannelButtonController(impulse, dispatcher, midiMode, bitwig::debug);
         Runnable channelButtonMidiModeSetter = new SingletonModeSetter(channelButtonController, midiMode);
 
         List<SettableBooleanValue> channelMuteStates = bitwig.channelFeatures(Channel::getMute);
@@ -109,10 +109,10 @@ public class ImpulseControl extends ControllerExtension {
         Mode encoderMixerMode = new ParameterSetterMode("Channel Pan", panParameters, ENCODER_VALUE_TO_PAN_INCREMENT, INCREMENT_PARAMETER_VALUE);
         Mode encoderPluginMode = new ParameterSetterMode("Remote Control", remoteControls, ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT, INCREMENT_PARAMETER_VALUE);
 
-        EncoderController encoderBankController = new EncoderController(impulse, dispatcher, midiMode, bitwig::debug);
-        Runnable encoderMidiModeSetter = new SingletonModeSetter(encoderBankController, midiMode);
-        Runnable encoderMixerModeSetter = new SingletonModeSetter(encoderBankController, encoderMixerMode);
-        Runnable encoderPluginModeSetter = new SingletonModeSetter(encoderBankController, encoderPluginMode);
+        ControlChangeController encoderController = new EncoderController(impulse, dispatcher, midiMode, bitwig::debug);
+        Runnable encoderMidiModeSetter = new SingletonModeSetter(encoderController, midiMode);
+        Runnable encoderMixerModeSetter = new SingletonModeSetter(encoderController, encoderMixerMode);
+        Runnable encoderPluginModeSetter = new SingletonModeSetter(encoderController, encoderPluginMode);
 
         dispatcher.onTouch(impulse.encoderMidiModeButton(), encoderMidiModeSetter);
         dispatcher.onTouch(impulse.encoderMixerModeButton(), encoderMixerModeSetter);
