@@ -9,13 +9,13 @@ import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 
-public abstract class ControlChangeController implements Consumer<Mode> {
+public class ControlBankController implements Consumer<Mode> {
     private final Consumer<String> observer;
     private final String name;
     private Mode currentMode;
 
-    public ControlChangeController(List<? extends Control> controls, ControlChangeDispatcher dispatcher, Mode initialMode, Consumer<String> observer) {
-        name = "Buttons";
+    public ControlBankController(String name, List<? extends Control> controls, ControlChangeDispatcher dispatcher, Mode initialMode, Consumer<String> observer) {
+        this.name = name;
         this.observer = observer;
         currentMode = initialMode;
         IntStream.range(0, controls.size())
