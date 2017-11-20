@@ -7,9 +7,9 @@ import java.util.function.Function;
 public class MappingSetter<SV, T, TV> implements Consumer<SV> {
     private final T target;
     private final Function<SV, TV> mapper;
-    private final BiConsumer<T, ? super TV> setter;
+    private final BiConsumer<? super T, ? super TV> setter;
 
-    public MappingSetter(T target, Function<SV, TV> mapper, BiConsumer<T, ? super TV> setter) {
+    public MappingSetter(T target, Function<SV, TV> mapper, BiConsumer<? super T, ? super TV> setter) {
         this.target = target;
         this.mapper = mapper;
         this.setter = setter;

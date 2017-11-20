@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ParameterSetter extends MappingSetter<Integer, Parameter, Double> implements Service {
-    public ParameterSetter(Parameter target, Function<Integer, Double> mapper, BiConsumer<Parameter, ? super Double> setter) {
+    public ParameterSetter(Parameter target, Function<Integer, Double> mapper, BiConsumer<? super Parameter, ? super Double> setter) {
         super(target, mapper, setter);
     }
 
