@@ -8,7 +8,7 @@ public class Toggle extends Control {
         super(identifier);
     }
 
-    public boolean isOn(int value) {
+    public static boolean isOn(int value) {
         return value > 0;
     }
 }

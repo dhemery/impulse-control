@@ -10,10 +10,6 @@ public class Mode<T extends Consumer<Integer>> implements BiConsumer<Integer, In
     private final String name;
     private final List<T> actors = new ArrayList<>();
 
-    public Mode(String name) {
-        this(name, Collections.emptyList());
-    }
-
     public Mode(String name, List<T> actors) {
         this.name = name;
         this.actors.addAll(actors);
@@ -29,10 +25,14 @@ public class Mode<T extends Consumer<Integer>> implements BiConsumer<Integer, In
         return name;
     }
 
-    public void enter() {}
-    public void exit() {}
+    public void enter() {
+    }
+
+    public void exit() {
+    }
 
     protected void eachActor(Consumer<? super T> action) {
         actors.forEach(action);
     }
 }
+

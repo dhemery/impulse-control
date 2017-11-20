@@ -10,11 +10,12 @@ import com.dhemery.impulse.Toggle;
 import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 
-public class ButtonBankController {
+public class ButtonBankController implements Consumer<Mode> {
     private final Bitwig bitwig;
     private Mode currentMode;
     private final Mode soloMode;
@@ -31,21 +32,25 @@ public class ButtonBankController {
         soloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
         muteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
 
-        Mode midiMode = new Mode("MIDI");
+        Mode midiMode = new UninvocableMode("MIDI", this::debug);
         currentMode = midiMode;
 
-        dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
-        dispatcher.onValue(impulse.faderMixerModeButton(), this::onMixerModeButtonChange);
+        Runnable midiModeSetter = new SingletonModeSetter(this, midiMode);
+        Consumer<Integer> mixerModeSetter = new MappingModeSetter(this, v -> Toggle.isOn(v) ? muteMode : soloMode);
+
+        dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
+        dispatcher.onValue(impulse.faderMixerModeButton(), mixerModeSetter);
 
         IntStream.range(0, buttons.size())
                 .forEach(i -> dispatcher.onValue(buttons.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void onMixerModeButtonChange(Toggle button, int buttonState) {
-        enter(button.isOn(buttonState) ? muteMode : soloMode);
+    private void debug(String message) {
+        bitwig.debug(format("%s: %s", this, message));
     }
 
-    private void enter(Mode newMode) {
+    @Override
+    public void accept(Mode newMode) {
         if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;

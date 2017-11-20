@@ -30,7 +30,7 @@ public class ControlChangeProcessor implements ShortMidiMessageReceivedCallback,
     }
 
     @Override
-    public void onValue(Control control, IntConsumer action) {
+    public void onValue(Control control, Consumer<Integer> action) {
         onMessage(control, m -> action.accept(m.value()));
     }
 

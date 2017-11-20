@@ -1,8 +1,8 @@
 package com.dhemery.bitwig.impulse;
 
-import java.util.function.IntConsumer;
+import java.util.function.Consumer;
 
-public class RunOnButtonPress implements IntConsumer {
+public class RunOnButtonPress implements Consumer<Integer> {
     private final Runnable action;
 
     public RunOnButtonPress(Runnable action) {
@@ -10,7 +10,7 @@ public class RunOnButtonPress implements IntConsumer {
     }
 
     @Override
-    public void accept(int value) {
+    public void accept(Integer value) {
         if (value > 0) action.run();
     }
 }

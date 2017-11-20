@@ -30,17 +30,22 @@ public class FaderBankController implements Consumer<Mode> {
         List<Parameter> volumeParameters = bitwig.channelFeatures(Channel::getVolume);
         List<Fader> faders = impulse.mixerFaders();
 
-        Mode midiMode = new Mode("MIDI");
+        Mode midiMode = new UninvocableMode("MIDI", this::debug);
         Mode mixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
         currentMode = midiMode;
 
         Runnable midiModeSetter = new SingletonModeSetter(this, midiMode);
         Runnable mixerModeSetter = new SingletonModeSetter(this, mixerMode);
+
         dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
         dispatcher.onTouch(impulse.faderMixerModeButton(), mixerModeSetter);
 
         IntStream.range(0, faders.size())
                 .forEach(i -> dispatcher.onValue(faders.get(i), v -> currentMode.accept(i, v)));
+    }
+
+    private void debug(String message) {
+        bitwig.debug(format("%s: %s", this, message));
     }
 
     @Override

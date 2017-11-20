@@ -11,12 +11,13 @@ import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 
-public class EncoderBankController {
+public class EncoderBankController implements Consumer<Mode> {
     private static final double REMOTE_CONTROL_STEP_SIZE = 0.01;
     private static final double PAN_STEP_SIZE = 0.005;
     private static final Function<Integer, Double> ENCODER_VALUE_TO_PAN_INCREMENT = v -> PAN_STEP_SIZE * Encoder.steps(v);
@@ -33,21 +34,30 @@ public class EncoderBankController {
         List<Parameter> remoteControls = bitwig.remoteControls();
         List<Encoder> encoders = impulse.mixerEncoders();
 
-        Mode midiMode = new Mode("MIDI");
+        Mode midiMode = new UninvocableMode("MIDI", this::debug);
         Mode mixerMode = new ParameterSetterMode("Channel Pan", panParameters, ENCODER_VALUE_TO_PAN_INCREMENT, INCREMENT_PARAMETER_VALUE);
         Mode pluginMode = new ParameterSetterMode("Remote Control", remoteControls, ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT, INCREMENT_PARAMETER_VALUE);
 
         currentMode = midiMode;
 
-        dispatcher.onTouch(impulse.encoderMidiModeButton(), () -> enter(midiMode));
-        dispatcher.onTouch(impulse.encoderMixerModeButton(), () -> enter(mixerMode));
-        dispatcher.onTouch(impulse.encoderPluginModeButton(), () -> enter(pluginMode));
+        Runnable midiModeSetter = new SingletonModeSetter(this, midiMode);
+        Runnable mixerModeSetter =  new SingletonModeSetter(this, mixerMode);
+        Runnable pluginModeSetter =  new SingletonModeSetter(this, pluginMode);
+
+        dispatcher.onTouch(impulse.encoderMidiModeButton(), midiModeSetter);
+        dispatcher.onTouch(impulse.encoderMixerModeButton(), mixerModeSetter);
+        dispatcher.onTouch(impulse.encoderPluginModeButton(), pluginModeSetter);
 
         IntStream.range(0, encoders.size())
                 .forEach(i -> dispatcher.onValue(encoders.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void enter(Mode newMode) {
+    private void debug(String message) {
+        bitwig.debug(format("%s: %s", this, message));
+    }
+
+    @Override
+    public void accept(Mode newMode) {
         if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;
