@@ -16,22 +16,22 @@ import static java.lang.String.format;
 
 public class ButtonBankController {
     private final Bitwig bitwig;
-    private BooleanTogglerMode currentMode;
-    private final BooleanTogglerMode soloMode;
-    private final BooleanTogglerMode muteMode;
+    private ServiceMode currentMode;
+    private final ServiceMode soloMode;
+    private final ServiceMode muteMode;
     private final String name;
 
     public ButtonBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         name = "Buttons";
         this.bitwig = bitwig;
+        List<? extends MomentaryButton> buttons = impulse.mixerButtons();
         List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
         List<SettableBooleanValue> soloStates = bitwig.channelFeatures(Channel::getSolo);
-        List<? extends MomentaryButton> buttons = impulse.mixerButtons();
 
         soloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
         muteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
 
-        BooleanTogglerMode midiMode = new BooleanTogglerMode("MIDI");
+        ServiceMode midiMode = new ServiceMode("MIDI");
         currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
@@ -45,7 +45,7 @@ public class ButtonBankController {
         enter(button.isOn(buttonState) ? muteMode : soloMode);
     }
 
-    private void enter(BooleanTogglerMode newMode) {
+    private void enter(ServiceMode newMode) {
         if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;
