@@ -11,12 +11,13 @@ import com.dhemery.midi.ControlChangeDispatcher;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 
-public class FaderBankController {
+public class FaderBankController implements Consumer<Mode> {
     private static final BiConsumer<Parameter, Double> SET_PARAMETER_VALUE = SettableRangedValue::set;
     private static final Function<Integer, Double> FADER_VALUE_TO_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
     private final String name;
@@ -33,17 +34,20 @@ public class FaderBankController {
         Mode mixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
         currentMode = midiMode;
 
-        dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
-        dispatcher.onTouch(impulse.faderMixerModeButton(), () -> enter(mixerMode));
+        Runnable midiModeSetter = new SingletonModeSetter(this, midiMode);
+        Runnable mixerModeSetter = new SingletonModeSetter(this, mixerMode);
+        dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
+        dispatcher.onTouch(impulse.faderMixerModeButton(), mixerModeSetter);
 
         IntStream.range(0, faders.size())
                 .forEach(i -> dispatcher.onValue(faders.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void enter(Mode newMode) {
-        if (currentMode == newMode) return;
+    @Override
+    public void accept(Mode mode) {
+        if (currentMode == mode) return;
         currentMode.exit();
-        currentMode = newMode;
+        currentMode = mode;
         currentMode.enter();
         bitwig.debug(format("%s %s", name, format("-> %s", currentMode)));
     }
