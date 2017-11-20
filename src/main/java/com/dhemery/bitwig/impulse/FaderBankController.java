@@ -21,7 +21,7 @@ public class FaderBankController {
     private static final Function<Integer, Double> FADER_VALUE_TO_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
     private final String name;
     private final Bitwig bitwig;
-    private ServiceMode currentMode;
+    private Mode currentMode;
 
     public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         name = "Faders";
@@ -29,8 +29,8 @@ public class FaderBankController {
         List<Parameter> volumeParameters = bitwig.channelFeatures(Channel::getVolume);
         List<Fader> faders = impulse.mixerFaders();
 
-        ServiceMode midiMode = new ServiceMode("MIDI");
-        ServiceMode mixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
+        Mode midiMode = new Mode("MIDI");
+        Mode mixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
         currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
@@ -40,16 +40,11 @@ public class FaderBankController {
                 .forEach(i -> dispatcher.onValue(faders.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void enter(ServiceMode newMode) {
+    private void enter(Mode newMode) {
         if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;
         currentMode.enter();
-        debug(format("-> %s", currentMode));
+        bitwig.debug(format("%s %s", name, format("-> %s", currentMode)));
     }
-
-    private void debug(String message) {
-        bitwig.debug(format("%s %s", name, message));
-    }
-
 }

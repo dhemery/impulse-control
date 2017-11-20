@@ -24,7 +24,7 @@ public class EncoderBankController {
     private static final BiConsumer<Parameter, Double> INCREMENT_PARAMETER_VALUE = SettableRangedValue::inc;
     private final Bitwig bitwig;
     private final String name;
-    private ServiceMode currentMode;
+    private Mode currentMode;
 
     public EncoderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         name = "Encoders";
@@ -33,9 +33,9 @@ public class EncoderBankController {
         List<Parameter> remoteControls = bitwig.remoteControls();
         List<Encoder> encoders = impulse.mixerEncoders();
 
-        ServiceMode midiMode = new ServiceMode("MIDI");
-        ServiceMode mixerMode = new ParameterSetterMode("Channel Pan", panParameters, ENCODER_VALUE_TO_PAN_INCREMENT, INCREMENT_PARAMETER_VALUE);
-        ServiceMode pluginMode = new ParameterSetterMode("Remote Control", remoteControls, ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT, INCREMENT_PARAMETER_VALUE);
+        Mode midiMode = new Mode("MIDI");
+        Mode mixerMode = new ParameterSetterMode("Channel Pan", panParameters, ENCODER_VALUE_TO_PAN_INCREMENT, INCREMENT_PARAMETER_VALUE);
+        Mode pluginMode = new ParameterSetterMode("Remote Control", remoteControls, ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT, INCREMENT_PARAMETER_VALUE);
 
         currentMode = midiMode;
 
@@ -47,15 +47,12 @@ public class EncoderBankController {
                 .forEach(i -> dispatcher.onValue(encoders.get(i), v -> currentMode.accept(i, v)));
     }
 
-    private void enter(ServiceMode newMode) {
+    private void enter(Mode newMode) {
+        if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;
         currentMode.enter();
-        debug(format("-> %s", currentMode));
-    }
-
-    private void debug(String message) {
-        bitwig.debug(format("%s %s", this, message));
+        bitwig.debug(format("%s %s", this, format("-> %s", currentMode)));
     }
 
     @Override

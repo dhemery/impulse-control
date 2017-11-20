@@ -1,38 +1,22 @@
 package com.dhemery.bitwig.impulse;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class ServiceMode<T extends Consumer<Integer> & Service> implements BiConsumer<Integer, Integer> {
-    private final String name;
-    private final List<T> actions = new ArrayList<>();
+public class ServiceMode<T extends Consumer<Integer> & Service> extends Mode<T> {
 
-    public ServiceMode(String name, List<T> targets) {
-        this(name);
-        actions.addAll(targets);
-    }
-
-    public ServiceMode(String name) {
-        this.name = name;
+    public ServiceMode(String name, List<T> actors) {
+        super(name, actors);
     }
 
     @Override
-    public void accept(Integer index, Integer value) {
-        actions.get(index).accept(value);
-    }
-
     public void enter() {
-        actions.forEach(Service::activate);
-    }
-
-    public void exit() {
-        actions.forEach(Service::deactivate);
+        eachActor(Service::activate);
     }
 
     @Override
-    public String toString() {
-        return name;
+    public void exit() {
+        eachActor(Service::deactivate);
     }
+
 }

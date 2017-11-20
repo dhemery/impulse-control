@@ -16,9 +16,9 @@ import static java.lang.String.format;
 
 public class ButtonBankController {
     private final Bitwig bitwig;
-    private ServiceMode currentMode;
-    private final ServiceMode soloMode;
-    private final ServiceMode muteMode;
+    private Mode currentMode;
+    private final Mode soloMode;
+    private final Mode muteMode;
     private final String name;
 
     public ButtonBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
@@ -31,7 +31,7 @@ public class ButtonBankController {
         soloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
         muteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
 
-        ServiceMode midiMode = new ServiceMode("MIDI");
+        Mode midiMode = new Mode("MIDI");
         currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
@@ -45,16 +45,12 @@ public class ButtonBankController {
         enter(button.isOn(buttonState) ? muteMode : soloMode);
     }
 
-    private void enter(ServiceMode newMode) {
+    private void enter(Mode newMode) {
         if (currentMode == newMode) return;
         currentMode.exit();
         currentMode = newMode;
         currentMode.enter();
-        debug(format("-> %s", currentMode));
-    }
-
-    private void debug(String message) {
-        bitwig.debug(format("%s %s", this, message));
+        bitwig.debug(format("%s %s", this, format("-> %s", currentMode)));
     }
 
     @Override
