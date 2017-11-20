@@ -2,20 +2,24 @@ package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Parameter;
+import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.dhemery.bitwig.Bitwig;
+import com.dhemery.bitwig.ParameterSetter;
 import com.dhemery.impulse.Fader;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeDispatcher;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.ObjIntConsumer;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public class FaderBankController {
+    private static final BiConsumer<Parameter, Double> SET_PARAMETER_VOLUME = SettableRangedValue::set;
+    private static final Function<Integer, Double> CONVERT_FADER_VALUE_TO_PARAMETER_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
     private final String name;
     private final Bitwig bitwig;
     private FaderMode currentMode;
@@ -23,17 +27,20 @@ public class FaderBankController {
     public FaderBankController(Impulse impulse, Bitwig bitwig, ControlChangeDispatcher dispatcher) {
         name = "Faders";
         this.bitwig = bitwig;
-        List<Parameter> panParameters = bitwig.channelFeatures(Channel::getVolume);
+        List<ParameterSetter> volumeSetters= bitwig.channelFeatures(Channel::getVolume).stream()
+                .map(p -> new ParameterSetter(p, CONVERT_FADER_VALUE_TO_PARAMETER_VOLUME, SET_PARAMETER_VOLUME))
+                .collect(toList());
         List<Fader> faders = impulse.mixerFaders();
 
         FaderMode midiMode = new FaderMode("MIDI");
-        FaderMode mixerMode = new FaderMode("Channel Volume", faders, panParameters);
+        FaderMode mixerMode = new FaderMode("Channel Volume", volumeSetters);
         currentMode = midiMode;
 
         dispatcher.onTouch(impulse.faderMidiModeButton(), () -> enter(midiMode));
         dispatcher.onTouch(impulse.faderMixerModeButton(), () -> enter(mixerMode));
 
-        faders.forEach(c -> dispatcher.onValue(c, this::onControlChange));
+        IntStream.range(0, faders.size())
+                .forEach(i -> dispatcher.onValue(faders.get(i), v -> currentMode.accept(i, v)));
     }
 
     private void enter(FaderMode newMode) {
@@ -43,40 +50,35 @@ public class FaderBankController {
         currentMode.enter();
     }
 
-    private void onControlChange(Fader encoder, int value) {
-        currentMode.accept(encoder, value);
-    }
-
     private void debug(String message) {
         bitwig.debug(format("%s %s", name, message));
     }
 
-    private class FaderMode implements ObjIntConsumer<Fader> {
+    private class FaderMode implements BiConsumer<Integer, Integer> {
         private final String name;
-        private final Map<Fader, Parameter> parametersByFader = new HashMap<>();
+        private final List<ParameterSetter> actions = new ArrayList<>();
 
-        public FaderMode(String name, List<Fader> faders, List<Parameter> parameters) {
+        public FaderMode(String name, List<ParameterSetter> actions) {
+            this.actions.addAll(actions);
             this.name = name;
-            for(int i = 0 ; i < parameters.size(); i++) parametersByFader.put(faders.get(i), parameters.get(i));
         }
 
         public FaderMode(String name) {
-            this(name, Collections.emptyList(), Collections.emptyList());
+            this(name, Collections.emptyList());
         }
 
         @Override
-        public void accept(Fader fader, int value) {
-            Parameter parameter = parametersByFader.get(fader);
-            parameter.set((double) value / Fader.MAX_VALUE);
+        public void accept(Integer index, Integer value) {
+            actions.get(index).accept(value);
         }
 
         public void enter() {
-            parametersByFader.values().forEach(p -> p.setIndication(true));
+            actions.forEach(ParameterSetter::activate);
             debug(format("-> %s", this));
         }
 
         public void exit() {
-            parametersByFader.values().forEach(p -> p.setIndication(false));
+            actions.forEach(ParameterSetter::deactivate);
         }
 
         @Override
