@@ -9,7 +9,7 @@ public class MomentaryButton extends Control {
     }
 
     public void ifPressed(int value, Runnable action) {
-        if(isPressed(value)) action.run();
+        if (isPressed(value)) action.run();
     }
 
     public static boolean isPressed(int value) {

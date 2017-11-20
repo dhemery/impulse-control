@@ -7,8 +7,10 @@ import com.dhemery.bitwig.impulse.Service;
 import java.util.function.Function;
 
 public class BooleanToggler extends MappingSetter<Integer, SettableBooleanValue, Boolean> implements Service {
-    public BooleanToggler(SettableBooleanValue target, Function<Integer,Boolean> shouldToggle) {
-        super(target, shouldToggle, (t, b) -> { if(b) t.toggle();});
+    public BooleanToggler(SettableBooleanValue target, Function<Integer, Boolean> shouldToggle) {
+        super(target, shouldToggle, (t, b) -> {
+            if (b) t.toggle();
+        });
     }
 
     @Override

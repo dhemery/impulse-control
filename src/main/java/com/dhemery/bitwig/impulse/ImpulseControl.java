@@ -2,11 +2,10 @@ package com.dhemery.bitwig.impulse;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.*;
-import com.dhemery.bitwig.ForwardToNoteInput;
 import com.dhemery.bitwig.Bitwig;
-import com.dhemery.impulse.Impulse;
+import com.dhemery.bitwig.ForwardToNoteInput;
 import com.dhemery.impulse.Encoder;
-import com.dhemery.impulse.Selector;
+import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.Control;
 import com.dhemery.midi.ControlChangeMessage;
 
