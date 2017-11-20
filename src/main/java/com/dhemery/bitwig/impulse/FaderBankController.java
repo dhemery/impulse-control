@@ -9,7 +9,9 @@ import com.dhemery.impulse.Fader;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeDispatcher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -18,8 +20,8 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class FaderBankController {
-    private static final BiConsumer<Parameter, Double> SET_PARAMETER_VOLUME = SettableRangedValue::set;
-    private static final Function<Integer, Double> CONVERT_FADER_VALUE_TO_PARAMETER_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
+    private static final BiConsumer<Parameter, Double> SET_PARAMETER_VALUE = SettableRangedValue::set;
+    private static final Function<Integer, Double> FADER_VALUE_TO_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
     private final String name;
     private final Bitwig bitwig;
     private FaderMode currentMode;
@@ -28,7 +30,7 @@ public class FaderBankController {
         name = "Faders";
         this.bitwig = bitwig;
         List<ParameterSetter> volumeSetters= bitwig.channelFeatures(Channel::getVolume).stream()
-                .map(p -> new ParameterSetter(p, CONVERT_FADER_VALUE_TO_PARAMETER_VOLUME, SET_PARAMETER_VOLUME))
+                .map(p -> new ParameterSetter(p, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE))
                 .collect(toList());
         List<Fader> faders = impulse.mixerFaders();
 

@@ -10,7 +10,7 @@ public class Encoder extends Control {
         super(identifier);
     }
 
-    public int size(int value) {
+    public static int steps(int value) {
         return value - BASE_VALUE;
     }
 }
