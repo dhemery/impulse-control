@@ -1,4 +1,4 @@
-package com.dhemery.bitwig.impulse;
+package com.dhemery.bitwig;
 
 import com.bitwig.extension.controller.api.Parameter;
 import com.dhemery.bitwig.ParameterSetter;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-class ParameterSetterMode implements BiConsumer<Integer, Integer> {
+public class ParameterSetterMode implements BiConsumer<Integer, Integer> {
     private final String name;
     private final List<ParameterSetter> actions = new ArrayList<>();
 

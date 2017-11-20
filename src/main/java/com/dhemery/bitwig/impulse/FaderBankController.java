@@ -4,7 +4,7 @@ import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.dhemery.bitwig.Bitwig;
-import com.dhemery.bitwig.ParameterSetter;
+import com.dhemery.bitwig.ParameterSetterMode;
 import com.dhemery.impulse.Fader;
 import com.dhemery.impulse.Impulse;
 import com.dhemery.midi.ControlChangeDispatcher;
@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 public class FaderBankController {
     private static final BiConsumer<Parameter, Double> SET_PARAMETER_VALUE = SettableRangedValue::set;
