@@ -5,19 +5,18 @@ import com.bitwig.extension.controller.api.*;
 import com.dhemery.bitwig.Bitwig;
 import com.dhemery.bitwig.BooleanTogglerMode;
 import com.dhemery.bitwig.ForwardToNoteInput;
-import com.dhemery.impulse.Encoder;
-import com.dhemery.impulse.Impulse;
-import com.dhemery.impulse.MomentaryButton;
-import com.dhemery.impulse.Toggle;
+import com.dhemery.bitwig.ParameterSetterMode;
+import com.dhemery.impulse.*;
 import com.dhemery.midi.Control;
 import com.dhemery.midi.ControlChangeMessage;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.dhemery.impulse.Port.USB;
-import static java.lang.String.format;
 
 public class ImpulseControl extends ControllerExtension {
     private static final String[] NOTE_INPUT_MESSAGE_MASKS = {
@@ -29,9 +28,13 @@ public class ImpulseControl extends ControllerExtension {
             "D?????",   // Channel Aftertouch, any channel.
             "E?????"    // Pitch Bend, any channel.
     };
-    private static final double PAN_PARAMETER_INCREMENT = 0.01;
-    private static final double REMOTE_CONTROL_PARAMETER_INCREMENT = 0.01;
-    private static final double VOLUME_PARAMETER_RANGE = 1.0;
+    private static final double REMOTE_CONTROL_STEP_SIZE = 0.01;
+    private static final double PAN_STEP_SIZE = 0.005;
+    private static final Function<Integer, Double> ENCODER_VALUE_TO_PAN_INCREMENT = v -> PAN_STEP_SIZE * Encoder.steps(v);
+    private static final Function<Integer, Double> ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT = v -> REMOTE_CONTROL_STEP_SIZE * Encoder.steps(v);
+    private static final BiConsumer<Parameter, Double> INCREMENT_PARAMETER_VALUE = SettableRangedValue::inc;
+    private static final BiConsumer<Parameter, Double> SET_PARAMETER_VALUE = SettableRangedValue::set;
+    private static final Function<Integer, Double> FADER_VALUE_TO_VOLUME = sv -> (double) sv / Fader.MAX_VALUE;
 
     private final ControlChangeProcessor dispatcher;
     private final ImpulseControlDefinition definition;
@@ -70,26 +73,52 @@ public class ImpulseControl extends ControllerExtension {
         dispatcher.onValue(impulse.loopButton(), new RunOnButtonPress(loopEnabled::toggle));
         dispatcher.onValue(impulse.recordButton(), new RunOnButtonPress(transport::record));
 
-
-        new EncoderBankController(impulse, bitwig, dispatcher);
-        new FaderBankController(impulse, bitwig, dispatcher);
-
         Mode midiMode = new UninvocableMode("MIDI", bitwig::debug);
-        ButtonBankController buttonBankController = new ButtonBankController(impulse, bitwig, dispatcher, midiMode);
-        Runnable midiModeSetter = new SingletonModeSetter(buttonBankController, midiMode);
 
-        List<SettableBooleanValue> muteStates = bitwig.channelFeatures(Channel::getMute);
-        List<SettableBooleanValue> soloStates = bitwig.channelFeatures(Channel::getSolo);
+        // Initialize channel fader controller and modes
+        ChannelFaderController channelFaderController = new ChannelFaderController(impulse, dispatcher, midiMode, bitwig::debug);
+        List<Parameter> volumeParameters = bitwig.channelFeatures(Channel::getVolume);
 
-        Mode channelSoloMode = new BooleanTogglerMode("Channel Solo", soloStates, MomentaryButton::isPressed);
-        Mode channelMuteMode = new BooleanTogglerMode("Channel Mute", muteStates, MomentaryButton::isPressed);
+        Mode channelFaderMixerMode = new ParameterSetterMode("Channel Volume", volumeParameters, FADER_VALUE_TO_VOLUME, SET_PARAMETER_VALUE);
 
-        Consumer<Integer> mixerModeSetter = new MappingModeSetter(buttonBankController, v -> Toggle.isOn(v) ? channelMuteMode : channelSoloMode);
+        Runnable channelFaderMidiModeSetter = new SingletonModeSetter(channelFaderController, midiMode);
+        Runnable channelFaderMixerModeSetter = new SingletonModeSetter(channelFaderController, channelFaderMixerMode);
 
-        dispatcher.onTouch(impulse.faderMidiModeButton(), midiModeSetter);
-        dispatcher.onValue(impulse.faderMixerModeButton(), mixerModeSetter);
+        dispatcher.onTouch(impulse.channelMidiModeButton(), channelFaderMidiModeSetter);
+        dispatcher.onTouch(impulse.channelMixerModeButton(), channelFaderMixerModeSetter);
 
-        Stream.of(impulse.faderMidiModeButton(), impulse.encoderMidiModeButton())
+        // Initialize channel button controller and modes
+        ChannelButtonController channelButtonController = new ChannelButtonController(impulse, dispatcher, midiMode, bitwig::debug);
+        Runnable channelButtonMidiModeSetter = new SingletonModeSetter(channelButtonController, midiMode);
+
+        List<SettableBooleanValue> channelMuteStates = bitwig.channelFeatures(Channel::getMute);
+        List<SettableBooleanValue> channelSoloStates = bitwig.channelFeatures(Channel::getSolo);
+
+        Mode channelButtonSoloMode = new BooleanTogglerMode("Channel Solo", channelSoloStates, MomentaryButton::isPressed);
+        Mode channelButtonMuteMode = new BooleanTogglerMode("Channel Mute", channelMuteStates, MomentaryButton::isPressed);
+
+        Consumer<Integer> channelButtonMixerModeSetter = new MappingModeSetter(channelButtonController, v -> Toggle.isOn(v) ? channelButtonMuteMode : channelButtonSoloMode);
+
+        dispatcher.onTouch(impulse.channelMidiModeButton(), channelButtonMidiModeSetter);
+        dispatcher.onValue(impulse.channelMixerModeButton(), channelButtonMixerModeSetter);
+
+        // Initialize encoder controller and modes
+        List<Parameter> panParameters = bitwig.channelFeatures(Channel::getPan);
+        List<Parameter> remoteControls = bitwig.remoteControls();
+
+        Mode encoderMixerMode = new ParameterSetterMode("Channel Pan", panParameters, ENCODER_VALUE_TO_PAN_INCREMENT, INCREMENT_PARAMETER_VALUE);
+        Mode encoderPluginMode = new ParameterSetterMode("Remote Control", remoteControls, ENCODER_VALUE_TO_REMOTE_CONTROL_INCREMENT, INCREMENT_PARAMETER_VALUE);
+
+        EncoderController encoderBankController = new EncoderController(impulse, dispatcher, midiMode, bitwig::debug);
+        Runnable encoderMidiModeSetter = new SingletonModeSetter(encoderBankController, midiMode);
+        Runnable encoderMixerModeSetter = new SingletonModeSetter(encoderBankController, encoderMixerMode);
+        Runnable encoderPluginModeSetter = new SingletonModeSetter(encoderBankController, encoderPluginMode);
+
+        dispatcher.onTouch(impulse.encoderMidiModeButton(), encoderMidiModeSetter);
+        dispatcher.onTouch(impulse.encoderMixerModeButton(), encoderMixerModeSetter);
+        dispatcher.onTouch(impulse.encoderPluginModeButton(), encoderPluginModeSetter);
+
+        Stream.of(impulse.channelMidiModeButton(), impulse.encoderMidiModeButton())
                 .forEach(impulse::select);
 
         midiInPort.setMidiCallback(dispatcher);

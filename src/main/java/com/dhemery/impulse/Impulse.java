@@ -119,11 +119,11 @@ public class Impulse {
         return loopButton;
     }
 
-    public Toggle faderMixerModeButton() {
+    public Toggle channelMixerModeButton() {
         return faderMixerModeButton;
     }
 
-    public Selector faderMidiModeButton() {
+    public Selector channelMidiModeButton() {
         return faderMidiModeButton;
     }
 
